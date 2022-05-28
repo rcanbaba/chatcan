@@ -7,7 +7,13 @@
 
 import UIKit
 
+protocol LoginViewDelegate: AnyObject {
+    func loginRegisterButtonTapped(view: LoginView, email: String?, password: String?, name: String?)
+}
+
 class LoginView: UIView {
+    
+    public weak var delegate: LoginViewDelegate?
     
     private lazy var userInputView: UIView = {
         let view = UIView()
@@ -35,6 +41,7 @@ class LoginView: UIView {
         button.layer.cornerRadius = 10.0
         button.setTitleColor(UIColor.Custom.appWhite, for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+        button.addTarget(self, action: #selector(loginRegisterButtonTapped), for: .touchUpInside)
         return button
     }()
     
@@ -191,5 +198,9 @@ class LoginView: UIView {
             profileImageView.widthAnchor.constraint(equalToConstant: 120),
             profileImageView.heightAnchor.constraint(equalToConstant: 120)
         ])
+    }
+    
+    @objc func loginRegisterButtonTapped () {
+        delegate?.loginRegisterButtonTapped(view: self, email: emailTextField.text, password: passwordTextField.text, name: nameTextField.text)
     }
 }
