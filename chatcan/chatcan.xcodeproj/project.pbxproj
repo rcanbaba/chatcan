@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		B488D9AE28422E8700BCA876 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B488D9AD28422E8700BCA876 /* AppDelegate.swift */; };
 		B488D9B028422E8700BCA876 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B488D9AF28422E8700BCA876 /* SceneDelegate.swift */; };
-		B488D9B228422E8700BCA876 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B488D9B128422E8700BCA876 /* ViewController.swift */; };
+		B488D9B228422E8700BCA876 /* InboxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B488D9B128422E8700BCA876 /* InboxViewController.swift */; };
 		B488D9B728422E8900BCA876 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B488D9B628422E8900BCA876 /* Assets.xcassets */; };
 		B488D9BA28422E8900BCA876 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B488D9B828422E8900BCA876 /* LaunchScreen.storyboard */; };
 		B488D9C32842740B00BCA876 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B488D9C22842740B00BCA876 /* LoginViewController.swift */; };
@@ -23,13 +23,16 @@
 		B4D3087A284297C1001C88AF /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = B4D30879284297C1001C88AF /* FirebaseDatabase */; };
 		B4D3087C284297C1001C88AF /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = B4D3087B284297C1001C88AF /* FirebaseStorage */; };
 		B4D3087E2842C618001C88AF /* SegmentedControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D3087D2842C618001C88AF /* SegmentedControlView.swift */; };
+		B4D308802843A82F001C88AF /* MessageTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D3087F2843A82F001C88AF /* MessageTableViewController.swift */; };
+		B4D308832843B18A001C88AF /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D308822843B18A001C88AF /* User.swift */; };
+		B4D308862843B45B001C88AF /* UserTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D308852843B45B001C88AF /* UserTableViewCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		B488D9AA28422E8700BCA876 /* chatcan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = chatcan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B488D9AD28422E8700BCA876 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B488D9AF28422E8700BCA876 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		B488D9B128422E8700BCA876 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		B488D9B128422E8700BCA876 /* InboxViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InboxViewController.swift; sourceTree = "<group>"; };
 		B488D9B628422E8900BCA876 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B488D9B928422E8900BCA876 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		B488D9BB28422E8900BCA876 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -41,6 +44,9 @@
 		B488D9CE2842879100BCA876 /* UITextFieldExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITextFieldExtension.swift; sourceTree = "<group>"; };
 		B488D9D0284295F800BCA876 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B4D3087D2842C618001C88AF /* SegmentedControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentedControlView.swift; sourceTree = "<group>"; };
+		B4D3087F2843A82F001C88AF /* MessageTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageTableViewController.swift; sourceTree = "<group>"; };
+		B4D308822843B18A001C88AF /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		B4D308852843B45B001C88AF /* UserTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserTableViewCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,12 +82,12 @@
 		B488D9AC28422E8700BCA876 /* chatcan */ = {
 			isa = PBXGroup;
 			children = (
-				B488D9C6284277F200BCA876 /* Extensions */,
-				B488D9C1284273F500BCA876 /* Controller */,
-				B488D9C9284278DB00BCA876 /* Views */,
 				B488D9AD28422E8700BCA876 /* AppDelegate.swift */,
 				B488D9AF28422E8700BCA876 /* SceneDelegate.swift */,
-				B488D9B128422E8700BCA876 /* ViewController.swift */,
+				B4D308812843B164001C88AF /* Model */,
+				B488D9C9284278DB00BCA876 /* Views */,
+				B488D9C1284273F500BCA876 /* Controller */,
+				B488D9C6284277F200BCA876 /* Extensions */,
 				B488D9B628422E8900BCA876 /* Assets.xcassets */,
 				B488D9B828422E8900BCA876 /* LaunchScreen.storyboard */,
 				B488D9BB28422E8900BCA876 /* Info.plist */,
@@ -93,6 +99,8 @@
 		B488D9C1284273F500BCA876 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
+				B488D9B128422E8700BCA876 /* InboxViewController.swift */,
+				B4D3087F2843A82F001C88AF /* MessageTableViewController.swift */,
 				B488D9C22842740B00BCA876 /* LoginViewController.swift */,
 			);
 			path = Controller;
@@ -112,10 +120,27 @@
 		B488D9C9284278DB00BCA876 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B4D308842843B43E001C88AF /* Cells */,
 				B488D9CA284278F200BCA876 /* LoginView.swift */,
 				B4D3087D2842C618001C88AF /* SegmentedControlView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		B4D308812843B164001C88AF /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				B4D308822843B18A001C88AF /* User.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		B4D308842843B43E001C88AF /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				B4D308852843B45B001C88AF /* UserTableViewCell.swift */,
+			);
+			path = Cells;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -199,11 +224,14 @@
 			files = (
 				B488D9C32842740B00BCA876 /* LoginViewController.swift in Sources */,
 				B488D9CF2842879100BCA876 /* UITextFieldExtension.swift in Sources */,
+				B4D308802843A82F001C88AF /* MessageTableViewController.swift in Sources */,
 				B488D9CB284278F200BCA876 /* LoginView.swift in Sources */,
-				B488D9B228422E8700BCA876 /* ViewController.swift in Sources */,
+				B4D308862843B45B001C88AF /* UserTableViewCell.swift in Sources */,
+				B488D9B228422E8700BCA876 /* InboxViewController.swift in Sources */,
 				B488D9C82842780900BCA876 /* UIViewControllerExtension.swift in Sources */,
 				B488D9C5284275B200BCA876 /* UIColorExtension.swift in Sources */,
 				B488D9AE28422E8700BCA876 /* AppDelegate.swift in Sources */,
+				B4D308832843B18A001C88AF /* User.swift in Sources */,
 				B488D9CD284282F600BCA876 /* UIViewExtension.swift in Sources */,
 				B4D3087E2842C618001C88AF /* SegmentedControlView.swift in Sources */,
 				B488D9B028422E8700BCA876 /* SceneDelegate.swift in Sources */,
