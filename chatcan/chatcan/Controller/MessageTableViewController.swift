@@ -25,11 +25,11 @@ class MessageTableViewController: UITableViewController {
     
     private func fetchUser () {
         Database.database().reference().child("users").observe(.childAdded) { snapshot in
-            print(snapshot)
             if let value = snapshot.value as? NSDictionary {
                 let user = User()
                 user.name = value["name"] as? String ?? ""
                 user.email = value["email"] as? String ?? ""
+                user.profileImageUrl = value["profileImageUrl"] as? String ?? ""
                 self.users.append(user)
                 // better approach instead of reload all tableview
                 self.tableView.insertRows(
@@ -52,11 +52,19 @@ class MessageTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! UserTableViewCell
         let user = users[indexPath.row]
         cell.textLabel?.text = user.name
         cell.detailTextLabel?.text = user.email
+        
+        if let profileImageUrl = user.profileImageUrl {
+            cell.profileImageView.loadImageUsingCacheWithUrlString(urlString: profileImageUrl)
+        }
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 74
     }
 
 }

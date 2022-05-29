@@ -12,11 +12,18 @@ import FirebaseAuth
 
 class LoginViewController: UIViewController {
     
+    private enum MediaType: String {
+        case photo = "public.image"
+        case video = "public.movie"
+    }
+    
     private lazy var loginView = LoginView()
-
+    
+    private var profileImage = UIImage()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         view.backgroundColor = UIColor.Login.background
         setNeedsStatusBarAppearanceUpdate()
         loginView.delegate = self
@@ -28,6 +35,21 @@ class LoginViewController: UIViewController {
     
     override func loadView() {
         self.view = loginView
+    }
+    
+    private func registerUserIntoDatabaseWithUID(uid: String, values: [String: AnyObject]) {
+        let ref = Database.database().reference(fromURL: "gs://chatcan-44462.appspot.com")
+        let userRef = ref.child("users").child(uid)
+        
+        userRef.updateChildValues(values as [AnyHashable : Any]) { error, reference in
+            if let error = error {
+                self.present(LoginViewController.getAlert(title: "Reference Error", message: error.localizedDescription), animated: true)
+                return
+            } else {
+                print("saved")
+                self.dismiss(animated: true, completion: nil)
+            }
+        }
     }
 }
 
@@ -50,20 +72,57 @@ extension LoginViewController: LoginViewDelegate {
             } else {
                 guard let userID = response?.user.uid else { return }
                 
-                let ref = Database.database().reference(fromURL: "gs://chatcan-44462.appspot.com")
-                let userRef = ref.child("users").child(userID)
-                let values = ["name": name, "email": email]
-                
-                userRef.updateChildValues(values as [AnyHashable : Any]) { error, reference in
-                    if let error = error {
-                        self.present(LoginViewController.getAlert(title: "Reference Error", message: error.localizedDescription), animated: true)
-                        return
-                    } else {
-                        print("saved")
-                        self.dismiss(animated: true, completion: nil)
+                if let uploadData = self.profileImage.jpegData(compressionQuality: 0.5) {
+                    let imageName = NSUUID().uuidString
+                    let storageRef = Storage.storage().reference().child("profile_images").child("\(imageName).jpg")
+                    storageRef.putData(uploadData, metadata: nil) { metadata, error in
+                        if let error = error {
+                            self.present(LoginViewController.getAlert(title: "Upload Error", message: error.localizedDescription), animated: true)
+                            return
+                        } else {
+                            storageRef.downloadURL { url, error in
+                                if let error = error {
+                                    self.present(LoginViewController.getAlert(title: "Download Url Error", message: error.localizedDescription), animated: true)
+                                    return
+                                } else {
+                                    if let url = url?.absoluteString {
+                                        if let values = ["name": name, "email": email, "profileImageUrl": url] as [String: AnyObject]? {
+                                            self.registerUserIntoDatabaseWithUID(uid: userID, values: values)
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
+    }
+    
+    func handleProfileImageTap(view: LoginView) {
+        let picker = UIImagePickerController()
+        picker.delegate = self
+        picker.allowsEditing = true
+        present(picker, animated: true, completion: nil)
+    }
+}
+
+extension LoginViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate  {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        guard let mediaType = info[UIImagePickerController.InfoKey.mediaType] as? String else {
+            return
+        }
+        if mediaType == MediaType.photo.rawValue {
+            guard let image = info[.editedImage] as? UIImage else {
+                return
+            }
+            loginView.setProfileImage(image: image)
+            profileImage = image
+        }
+        dismiss(animated: true, completion: nil)
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        dismiss(animated: true, completion: nil)
     }
 }
