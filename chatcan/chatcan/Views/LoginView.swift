@@ -107,6 +107,7 @@ class LoginView: UIView {
         mytapGestureRecognizer.numberOfTapsRequired = 1
         imageView.addGestureRecognizer(mytapGestureRecognizer)
         imageView.isUserInteractionEnabled = true
+        imageView.layer.masksToBounds = true
         return imageView
     }()
     
@@ -129,6 +130,7 @@ class LoginView: UIView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
+        profileImageView.layer.cornerRadius = profileImageView.bounds.height / 2
     }
     
     private func configureUI() {
