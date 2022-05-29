@@ -32,8 +32,18 @@ class LoginViewController: UIViewController {
 }
 
 extension LoginViewController: LoginViewDelegate {
-    func loginRegisterButtonTapped(view: LoginView, email: String?, password: String?, name: String?) {
-        
+    func loginButtonTapped(view: LoginView, email: String?, password: String?) {
+        Auth.auth().signIn(withEmail: email!, password: password!) { response, error in
+            if let error = error {
+                self.present(LoginViewController.getAlert(title: "Login Error", message: error.localizedDescription), animated: true)
+            } else {
+                print("login")
+                self.dismiss(animated: true, completion: nil)
+            }
+        }
+    }
+    
+    func registerButtonTapped(view: LoginView, email: String?, password: String?, name: String?) {
         Auth.auth().createUser(withEmail: email!, password: password!) { response, error in
             if let error = error {
                 self.present(LoginViewController.getAlert(title: "Register Error", message: error.localizedDescription), animated: true)
@@ -50,6 +60,7 @@ extension LoginViewController: LoginViewDelegate {
                         return
                     } else {
                         print("saved")
+                        self.dismiss(animated: true, completion: nil)
                     }
                 }
             }

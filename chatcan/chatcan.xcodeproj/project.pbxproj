@@ -22,6 +22,7 @@
 		B4D30878284297C1001C88AF /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B4D30877284297C1001C88AF /* FirebaseAuth */; };
 		B4D3087A284297C1001C88AF /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = B4D30879284297C1001C88AF /* FirebaseDatabase */; };
 		B4D3087C284297C1001C88AF /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = B4D3087B284297C1001C88AF /* FirebaseStorage */; };
+		B4D3087E2842C618001C88AF /* SegmentedControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D3087D2842C618001C88AF /* SegmentedControlView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +40,7 @@
 		B488D9CC284282F600BCA876 /* UIViewExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewExtension.swift; sourceTree = "<group>"; };
 		B488D9CE2842879100BCA876 /* UITextFieldExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITextFieldExtension.swift; sourceTree = "<group>"; };
 		B488D9D0284295F800BCA876 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		B4D3087D2842C618001C88AF /* SegmentedControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentedControlView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +113,7 @@
 			isa = PBXGroup;
 			children = (
 				B488D9CA284278F200BCA876 /* LoginView.swift */,
+				B4D3087D2842C618001C88AF /* SegmentedControlView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -202,6 +205,7 @@
 				B488D9C5284275B200BCA876 /* UIColorExtension.swift in Sources */,
 				B488D9AE28422E8700BCA876 /* AppDelegate.swift in Sources */,
 				B488D9CD284282F600BCA876 /* UIViewExtension.swift in Sources */,
+				B4D3087E2842C618001C88AF /* SegmentedControlView.swift in Sources */,
 				B488D9B028422E8700BCA876 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
