@@ -10,6 +10,7 @@ import UIKit
 protocol LoginViewDelegate: AnyObject {
     func loginButtonTapped(view: LoginView, email: String?, password: String?)
     func registerButtonTapped(view: LoginView, email: String?, password: String?, name: String?)
+    func handleProfileImageTap(view: LoginView)
 }
 
 class LoginView: UIView {
@@ -99,6 +100,18 @@ class LoginView: UIView {
     
     private lazy var profileImageView: UIImageView = {
         let imageView = UIImageView()
+        imageView.image = UIImage(named: "edit-image-icon")
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFill
+        let mytapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleSelectProfileImageView))
+        mytapGestureRecognizer.numberOfTapsRequired = 1
+        imageView.addGestureRecognizer(mytapGestureRecognizer)
+        imageView.isUserInteractionEnabled = true
+        return imageView
+    }()
+    
+    private lazy var logoImageView: UIImageView = {
+        let imageView = UIImageView()
         imageView.image = UIImage(named: "chatcan-logo")
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFill
@@ -118,19 +131,20 @@ class LoginView: UIView {
         super.layoutSubviews()
     }
     
-    
     private func configureUI() {
         addSubview(borderView)
         addSubview(userInputView)
         addSubview(loginRegisterButton)
         addSubview(profileImageView)
         addSubview(loginRegisterSegmentedControl)
+        addSubview(logoImageView)
         
         configureBorderView()
         configureUserInputView()
         configureLoginRegisterButton()
         configureProfileImageView()
         configureSegmentedControlView()
+        configureLogoImageView()
     }
     
 
@@ -139,7 +153,7 @@ class LoginView: UIView {
             borderView.centerXAnchor.constraint(equalTo: centerXAnchor),
             borderView.centerYAnchor.constraint(equalTo: centerYAnchor),
             borderView.widthAnchor.constraint(equalTo: widthAnchor, constant: -32),
-            borderView.heightAnchor.constraint(equalTo: heightAnchor, constant: -128)
+            borderView.heightAnchor.constraint(equalTo: heightAnchor, constant: -144)
         ])
     }
     
@@ -190,7 +204,6 @@ class LoginView: UIView {
         passwordTextField.widthAnchor.constraint(equalTo: userInputView.widthAnchor, constant: -12).isActive = true
         passwordTextFieldHeightAnchor?.isActive = true
         
-        
     }
     
     private func configureLoginRegisterButton() {
@@ -217,6 +230,15 @@ class LoginView: UIView {
             loginRegisterSegmentedControl.bottomAnchor.constraint(equalTo: userInputView.topAnchor, constant: -12),
             loginRegisterSegmentedControl.widthAnchor.constraint(equalTo: userInputView.widthAnchor, multiplier: 1),
             loginRegisterSegmentedControl.heightAnchor.constraint(equalToConstant: 36)
+        ])
+    }
+    
+    private func configureLogoImageView() {
+        NSLayoutConstraint.activate([
+            logoImageView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            logoImageView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -42),
+            logoImageView.widthAnchor.constraint(equalToConstant: 100),
+            logoImageView.heightAnchor.constraint(equalToConstant: 100)
         ])
     }
     
@@ -253,4 +275,16 @@ class LoginView: UIView {
         passwordTextFieldHeightAnchor = passwordTextField.heightAnchor.constraint(equalTo: userInputView.heightAnchor, multiplier: loginRegisterSegmentedControl.selectedSegmentIndex == 0 ? 1/2 : 1/3)
         passwordTextFieldHeightAnchor?.isActive = true
     }
+    
+    @objc func handleSelectProfileImageView() {
+        delegate?.handleProfileImageTap(view: self)
+    }
+}
+
+extension LoginView {
+    
+    public func setProfileImage(image: UIImage){
+        profileImageView.image = image
+    }
+    
 }

@@ -25,11 +25,11 @@ class MessageTableViewController: UITableViewController {
     
     private func fetchUser () {
         Database.database().reference().child("users").observe(.childAdded) { snapshot in
-            print(snapshot)
             if let value = snapshot.value as? NSDictionary {
                 let user = User()
                 user.name = value["name"] as? String ?? ""
                 user.email = value["email"] as? String ?? ""
+                user.profileImageUrl = value["profileImageUrl"] as? String ?? ""
                 self.users.append(user)
                 // better approach instead of reload all tableview
                 self.tableView.insertRows(
