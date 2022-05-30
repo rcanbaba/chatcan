@@ -18,7 +18,6 @@ class LoginViewController: UIViewController {
     }
     
     private lazy var loginView = LoginView()
-    
     private var profileImage = UIImage()
     
     override func viewDidLoad() {
@@ -46,7 +45,6 @@ class LoginViewController: UIViewController {
                 self.present(LoginViewController.getAlert(title: "Reference Error", message: error.localizedDescription), animated: true)
                 return
             } else {
-                print("saved")
                 self.dismiss(animated: true, completion: nil)
             }
         }
@@ -59,7 +57,6 @@ extension LoginViewController: LoginViewDelegate {
             if let error = error {
                 self.present(LoginViewController.getAlert(title: "Login Error", message: error.localizedDescription), animated: true)
             } else {
-                print("login")
                 self.dismiss(animated: true, completion: nil)
             }
         }
@@ -72,7 +69,7 @@ extension LoginViewController: LoginViewDelegate {
             } else {
                 guard let userID = response?.user.uid else { return }
                 
-                if let uploadData = self.profileImage.jpegData(compressionQuality: 0.5) {
+                if let uploadData = self.profileImage.jpegData(compressionQuality: 0.2) {
                     let imageName = NSUUID().uuidString
                     let storageRef = Storage.storage().reference().child("profile_images").child("\(imageName).jpg")
                     storageRef.putData(uploadData, metadata: nil) { metadata, error in
@@ -93,6 +90,10 @@ extension LoginViewController: LoginViewDelegate {
                                 }
                             }
                         }
+                    }
+                } else {
+                    if let values = ["name": name, "email": email] as [String: AnyObject]? {
+                        self.registerUserIntoDatabaseWithUID(uid: userID, values: values)
                     }
                 }
             }

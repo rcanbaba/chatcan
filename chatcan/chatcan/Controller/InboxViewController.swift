@@ -20,6 +20,11 @@ class InboxViewController: UITableViewController {
 
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        checkIfUserLoggedIn()
+    }
+    
     private func setNavigationBar() {
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(handleLogout))
         let image = UIImage(named: "new-message-icon")?.withRenderingMode(.alwaysOriginal)
@@ -33,17 +38,65 @@ class InboxViewController: UITableViewController {
             }
             return
         }
-        
+        fetchUserAndSetupNavBarTitle()
+    }
+    
+    private func fetchUserAndSetupNavBarTitle() {
         if let uid = Auth.auth().currentUser?.uid {
             Database.database().reference().child("users").child(uid).observeSingleEvent(of: .value) { snapshot in
                 if let value = snapshot.value as? NSDictionary {
-                    self.navigationItem.title = value["name"] as? String ?? ""
+                    let user = User()
+                    user.name = value["name"] as? String ?? ""
+                    user.email = value["email"] as? String ?? ""
+                    user.profileImageUrl = value["profileImageUrl"] as? String ?? ""
+                    self.setupNavBarWithUser(user: user)
                 }
             } withCancel: { error in
                 print(error.localizedDescription)
             }
         }
-            
+    }
+    
+    private func setupNavBarWithUser(user: User) {
+        let titleView = UIView()
+        titleView.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
+        
+        let containerView = UIView()
+        containerView.translatesAutoresizingMaskIntoConstraints = false
+        titleView.addSubview(containerView)
+        
+        let profileImageView = UIImageView()
+        profileImageView.translatesAutoresizingMaskIntoConstraints = false
+        profileImageView.contentMode = .scaleAspectFill
+        profileImageView.layer.cornerRadius = 20.0
+        profileImageView.clipsToBounds = true
+        
+        if let profileImageUrl = user.profileImageUrl, profileImageUrl != "" {
+            profileImageView.loadImageUsingCacheWithUrlString(urlString: profileImageUrl)
+        } else {
+            profileImageView.image = UIImage(named: "empty-profile-icon")
+        }
+        
+        containerView.addSubview(profileImageView)
+        profileImageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor).isActive = true
+        profileImageView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
+        profileImageView.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        profileImageView.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        
+        let nameLabel = UILabel()
+        nameLabel.text = user.name
+        nameLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        containerView.addSubview(nameLabel)
+        nameLabel.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8).isActive = true
+        nameLabel.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor).isActive = true
+        nameLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor).isActive = true
+        nameLabel.heightAnchor.constraint(equalTo: profileImageView.heightAnchor).isActive = true
+        
+        containerView.centerXAnchor.constraint(equalTo: titleView.centerXAnchor).isActive = true
+        containerView.centerYAnchor.constraint(equalTo: titleView.centerYAnchor).isActive = true
+        
+        self.navigationItem.titleView = titleView
     }
     
     @objc func handleLogout () {

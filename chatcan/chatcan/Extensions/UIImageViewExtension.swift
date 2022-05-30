@@ -18,7 +18,10 @@ extension UIImageView {
             return
         }
         
-        guard let url = URL(string: urlString) else { return }
+        guard let url = URL(string: urlString) else {
+            self.image = UIImage(named: "empty-profile-icon")
+            return
+        }
         
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
