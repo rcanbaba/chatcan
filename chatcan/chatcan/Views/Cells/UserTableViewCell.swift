@@ -22,8 +22,11 @@ class UserTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
         
+        self.backgroundColor = UIColor.clear
+        textLabel?.textColor = UIColor.Custom.textDarkBlue
+        detailTextLabel?.textColor = UIColor.Custom.textDarkBlue
         self.addSubview(profileImageView)
-        profileImageView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12).isActive = true
+        profileImageView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 18).isActive = true
         profileImageView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
         profileImageView.widthAnchor.constraint(equalToConstant: 50).isActive = true
         profileImageView.heightAnchor.constraint(equalToConstant: 50).isActive = true
