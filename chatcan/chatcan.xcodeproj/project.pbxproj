@@ -19,6 +19,7 @@
 		B488D9CD284282F600BCA876 /* UIViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B488D9CC284282F600BCA876 /* UIViewExtension.swift */; };
 		B488D9CF2842879100BCA876 /* UITextFieldExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B488D9CE2842879100BCA876 /* UITextFieldExtension.swift */; };
 		B488D9D1284295F800BCA876 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B488D9D0284295F800BCA876 /* GoogleService-Info.plist */; };
+		B4B1383C2845DB9B00847331 /* ChatCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4B1383B2845DB9B00847331 /* ChatCollectionViewController.swift */; };
 		B4D30878284297C1001C88AF /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B4D30877284297C1001C88AF /* FirebaseAuth */; };
 		B4D3087A284297C1001C88AF /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = B4D30879284297C1001C88AF /* FirebaseDatabase */; };
 		B4D3087C284297C1001C88AF /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = B4D3087B284297C1001C88AF /* FirebaseStorage */; };
@@ -44,6 +45,7 @@
 		B488D9CC284282F600BCA876 /* UIViewExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewExtension.swift; sourceTree = "<group>"; };
 		B488D9CE2842879100BCA876 /* UITextFieldExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITextFieldExtension.swift; sourceTree = "<group>"; };
 		B488D9D0284295F800BCA876 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		B4B1383B2845DB9B00847331 /* ChatCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCollectionViewController.swift; sourceTree = "<group>"; };
 		B4D3087D2842C618001C88AF /* SegmentedControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentedControlView.swift; sourceTree = "<group>"; };
 		B4D3087F2843A82F001C88AF /* MessageTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageTableViewController.swift; sourceTree = "<group>"; };
 		B4D308822843B18A001C88AF /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
@@ -104,6 +106,7 @@
 				B488D9B128422E8700BCA876 /* InboxViewController.swift */,
 				B4D3087F2843A82F001C88AF /* MessageTableViewController.swift */,
 				B488D9C22842740B00BCA876 /* LoginViewController.swift */,
+				B4B1383B2845DB9B00847331 /* ChatCollectionViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -239,6 +242,7 @@
 				B488D9CD284282F600BCA876 /* UIViewExtension.swift in Sources */,
 				B4D3087E2842C618001C88AF /* SegmentedControlView.swift in Sources */,
 				B488D9B028422E8700BCA876 /* SceneDelegate.swift in Sources */,
+				B4B1383C2845DB9B00847331 /* ChatCollectionViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

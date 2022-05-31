@@ -60,6 +60,7 @@ class InboxViewController: UITableViewController {
     private func setupNavBarWithUser(user: User) {
         let titleView = UIView()
         titleView.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
+        titleView.isUserInteractionEnabled = true
         
         let containerView = UIView()
         containerView.translatesAutoresizingMaskIntoConstraints = false
@@ -86,17 +87,20 @@ class InboxViewController: UITableViewController {
         let nameLabel = UILabel()
         nameLabel.text = user.name
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
-        
+                
         containerView.addSubview(nameLabel)
         nameLabel.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8).isActive = true
         nameLabel.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor).isActive = true
         nameLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor).isActive = true
         nameLabel.heightAnchor.constraint(equalTo: profileImageView.heightAnchor).isActive = true
         
+        self.navigationItem.titleView = titleView
+        
         containerView.centerXAnchor.constraint(equalTo: titleView.centerXAnchor).isActive = true
         containerView.centerYAnchor.constraint(equalTo: titleView.centerYAnchor).isActive = true
         
-        self.navigationItem.titleView = titleView
+        navigationController?.navigationBar.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showChatController)))
+        navigationController?.navigationBar.isUserInteractionEnabled = true
     }
     
     @objc func handleLogout () {
@@ -117,5 +121,9 @@ class InboxViewController: UITableViewController {
         present(messageNavigationController, animated: true, completion: nil)
     }
 
+    @objc func showChatController () {
+        let chatController = ChatCollectionViewController(collectionViewLayout: UICollectionViewFlowLayout())
+        navigationController?.pushViewController(chatController, animated: true)
+    }
 }
 
