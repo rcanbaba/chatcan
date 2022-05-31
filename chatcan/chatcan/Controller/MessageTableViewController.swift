@@ -8,18 +8,25 @@
 import UIKit
 import Firebase
 
+protocol MessageTableViewControllerDelegate: AnyObject {
+    func userSelected(controller: UITableViewController, user: User)
+}
+
 class MessageTableViewController: UITableViewController {
     
     let cellIdentifier = "cellIdentifier"
     
     private var users = [User]()
+    
+    weak var delegate: MessageTableViewControllerDelegate?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(handleCancel))
+        navigationController?.navigationBar.tintColor = UIColor.Custom.textDarkBlue
         tableView.register(UserTableViewCell.self, forCellReuseIdentifier: cellIdentifier)
-        
+        tableView.backgroundColor = UIColor.Custom.appWhite
         fetchUser()
     }
     
@@ -27,6 +34,7 @@ class MessageTableViewController: UITableViewController {
         Database.database().reference().child("users").observe(.childAdded) { snapshot in
             if let value = snapshot.value as? NSDictionary {
                 let user = User()
+                user.id = snapshot.key
                 user.name = value["name"] as? String ?? ""
                 user.email = value["email"] as? String ?? ""
                 user.profileImageUrl = value["profileImageUrl"] as? String ?? ""
@@ -63,8 +71,15 @@ class MessageTableViewController: UITableViewController {
         return cell
     }
     
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        dismiss(animated: true) {
+            self.delegate?.userSelected(controller: self, user: self.users[indexPath.row])
+        }
+    }
+    
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 74
     }
+    
 
 }

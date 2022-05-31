@@ -10,6 +10,12 @@ import Firebase
 
 class ChatCollectionViewController: UICollectionViewController {
     
+    public var user: User? {
+        didSet {
+            navigationItem.title = user?.name
+        }
+    }
+    
     private lazy var containerView: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor.Custom.ligthBlue
@@ -42,9 +48,9 @@ class ChatCollectionViewController: UICollectionViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "Chat Logs"
-        collectionView.backgroundColor = UIColor.Custom.appWhite
-        
+        collectionView.backgroundColor = UIColor.white
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.Custom.textDarkBlue]
+        navigationController?.navigationBar.tintColor = UIColor.Custom.textDarkBlue
         configureUI()
     }
     
@@ -60,16 +66,16 @@ class ChatCollectionViewController: UICollectionViewController {
         containerView.heightAnchor.constraint(equalToConstant: 100).isActive = true
         
         containerView.addSubview(sendButton)
-        sendButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -8).isActive = true
+        sendButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -12).isActive = true
         sendButton.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 8).isActive = true
         sendButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
-        sendButton.heightAnchor.constraint(equalTo: containerView.heightAnchor, constant: -32).isActive = true
+        sendButton.heightAnchor.constraint(equalTo: containerView.heightAnchor, constant: -48).isActive = true
         
         containerView.addSubview(inputTextField)
-        inputTextField.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 8).isActive = true
+        inputTextField.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 12).isActive = true
         inputTextField.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 8).isActive = true
         inputTextField.trailingAnchor.constraint(equalTo: sendButton.leadingAnchor, constant: -8).isActive = true
-        inputTextField.heightAnchor.constraint(equalTo: containerView.heightAnchor, constant: -32).isActive = true
+        inputTextField.heightAnchor.constraint(equalTo: containerView.heightAnchor, constant: -48).isActive = true
         
         let separatorLineView = UIView()
         separatorLineView.backgroundColor = UIColor.Custom.textDarkBlue
@@ -85,16 +91,22 @@ class ChatCollectionViewController: UICollectionViewController {
     @objc func sendButtonTapped() {
         let ref = Database.database().reference().child("messages")
         let childRef = ref.childByAutoId()
-        if let values = ["text": inputTextField.text] as [String: AnyObject]? {
-            childRef.updateChildValues(values as [AnyHashable : Any]) { error, reference in
-                if let error = error {
-                    self.present(LoginViewController.getAlert(title: "Reference Error", message: error.localizedDescription), animated: true)
-                    return
-                } else {
-                    self.dismiss(animated: true, completion: nil)
-                }
+        let toId = user!.id!
+        let fromId = Auth.auth().currentUser!.uid
+        let timestamp: NSNumber = NSNumber(value: Int(NSDate().timeIntervalSince1970))
+        let text = inputTextField.text ?? "" as Any
+        
+        let values = ["text": text, "toId": toId, "fromId": fromId, "timestamp": timestamp ] as [String : Any]
+        
+        childRef.updateChildValues(values) { error, reference in
+            if let error = error {
+                self.present(LoginViewController.getAlert(title: "Reference Error", message: error.localizedDescription), animated: true)
+                return
+            } else {
+                self.dismiss(animated: true, completion: nil)
             }
         }
+        
     }
     
 }
