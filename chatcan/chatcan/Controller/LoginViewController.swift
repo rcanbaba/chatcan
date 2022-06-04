@@ -37,7 +37,7 @@ class LoginViewController: UIViewController {
     }
     
     private func registerUserIntoDatabaseWithUID(uid: String, values: [String: AnyObject]) {
-        let ref = Database.database().reference(fromURL: "gs://chatcan-44462.appspot.com")
+        let ref = Database.database().reference()
         let userRef = ref.child("users").child(uid)
         
         userRef.updateChildValues(values as [AnyHashable : Any]) { error, reference in

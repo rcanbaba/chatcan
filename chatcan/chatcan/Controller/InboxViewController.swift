@@ -10,15 +10,18 @@ import Firebase
 
 class InboxViewController: UITableViewController {
     
+    let cellIdentifier = "cellIdentifier"
+    
     private var messageTableViewController: MessageTableViewController?
     
     private var messages = [Message]()
+    private var messagesDictionary = [String: Message]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         view.backgroundColor = .lightGray
-
+        tableView.register(UserTableViewCell.self, forCellReuseIdentifier: cellIdentifier)
         setNavigationBar()
         checkIfUserLoggedIn()
         observeMessages()
@@ -116,7 +119,14 @@ class InboxViewController: UITableViewController {
                 message.toId = value["toId"] as? String ?? ""
                 message.text = value["text"] as? String ?? ""
                 message.timestamp = value["timestamp"] as? NSNumber ?? 0
-                self.messages.append(message)
+//                self.messages.append(message)
+                if let toId = message.toId {
+                    self.messagesDictionary[toId] = message
+                    self.messages = Array(self.messagesDictionary.values)
+                    self.messages.sort { message1, message2 in
+                        return message1.timestamp?.intValue ?? 0 > message2.timestamp?.intValue ?? 0
+                    }
+                }
                 DispatchQueue.main.async { [weak self] in
                     self?.tableView.reloadData()
                 }
@@ -156,13 +166,47 @@ extension InboxViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cellId")
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! UserTableViewCell
+        
+        return configureCell(cell: cell, indexPath: indexPath)
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 74
+    }
+}
+
+extension InboxViewController {
+    private func configureCell(cell: UserTableViewCell, indexPath: IndexPath) -> UserTableViewCell {
         let message = messages[indexPath.row]
-        cell.textLabel?.text = message.toId
+        
+        if let toId = message.toId {
+            let ref = Database.database().reference().child("users").child(toId)
+            ref.observeSingleEvent(of: .value) { snapshot in
+                if let dictionary = snapshot.value as? [String: AnyObject] {
+                    cell.textLabel?.text = dictionary["name"] as? String
+                    
+                    if let profileImageUrl = dictionary["profileImageUrl"] as? String {
+                        cell.profileImageView.loadImageUsingCacheWithUrlString(urlString: profileImageUrl)
+                    }
+                    
+                }
+                print(snapshot)
+            } withCancel: { error in
+                print(error.localizedDescription)
+            }
+        }
+        
+        if let time = message.timestamp?.doubleValue {
+            let timestampDate = NSDate(timeIntervalSince1970: time)
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "hh:mm:ss a"
+            cell.timeLabel.text = dateFormatter.string(from: timestampDate as Date)
+        }
         cell.detailTextLabel?.text = message.text
         cell.backgroundColor = UIColor.clear
         return cell
-    }
+    }    
 }
 
 extension InboxViewController: MessageTableViewControllerDelegate {
@@ -170,5 +214,3 @@ extension InboxViewController: MessageTableViewControllerDelegate {
         showChatController(user: user)
     }
 }
-
-
