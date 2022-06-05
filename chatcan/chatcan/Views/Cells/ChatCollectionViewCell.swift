@@ -7,6 +7,11 @@
 
 import UIKit
 
+enum MessageType: Int {
+    case incoming = 0
+    case outgoing = 1
+}
+
 class ChatCollectionViewCell: UICollectionViewCell {
     
     public lazy var textView: UITextView = {
@@ -28,13 +33,33 @@ class ChatCollectionViewCell: UICollectionViewCell {
         return view
     }()
     
+    public lazy var profileImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: "empty-profile-icon")
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFill
+        imageView.layer.cornerRadius = 16.0
+        imageView.layer.masksToBounds = true
+        return imageView
+    }()
+    
     public var bubbleWidthAnchor: NSLayoutConstraint?
+    private var bubbleViewRightAnchor: NSLayoutConstraint?
+    private var bubbleViewLeftAnchor: NSLayoutConstraint?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        
+        addSubview(profileImageView)
+        profileImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 8).isActive = true
+        profileImageView.bottomAnchor.constraint(equalTo: self.bottomAnchor).isActive = true
+        profileImageView.widthAnchor.constraint(equalToConstant: 32).isActive = true
+        profileImageView.heightAnchor.constraint(equalToConstant: 32).isActive = true
                 
         addSubview(bubbleView)
-        bubbleView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -8).isActive = true
+        bubbleViewRightAnchor = bubbleView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -8)
+        bubbleViewRightAnchor?.isActive = true
+        bubbleViewLeftAnchor = bubbleView.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8)
         bubbleView.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
         bubbleWidthAnchor = bubbleView.widthAnchor.constraint(equalToConstant: 200)
         bubbleWidthAnchor?.isActive = true
@@ -51,5 +76,24 @@ class ChatCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+}
+
+extension ChatCollectionViewCell {
+    
+    public func setUI(messageType: MessageType) {
+        
+        switch messageType {
+        case .incoming:
+            bubbleView.backgroundColor = UIColor.lightGray
+            bubbleViewLeftAnchor?.isActive = true
+            bubbleViewRightAnchor?.isActive = false
+            profileImageView.isHidden = false
+        case .outgoing:
+            bubbleView.backgroundColor = UIColor.Custom.ligthBlue
+            bubbleViewLeftAnchor?.isActive = false
+            bubbleViewRightAnchor?.isActive = true
+            profileImageView.isHidden = true
+        }
+    }
     
 }

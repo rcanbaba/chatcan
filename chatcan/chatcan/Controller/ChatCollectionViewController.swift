@@ -173,6 +173,10 @@ extension ChatCollectionViewController {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! ChatCollectionViewCell
         let message = messages[indexPath.item]
         cell.textView.text = message.text
+        if let profileImageUrl = user?.profileImageUrl {
+            cell.profileImageView.loadImageUsingCacheWithUrlString(urlString: profileImageUrl)
+        }
+        message.fromId == Auth.auth().currentUser?.uid ? cell.setUI(messageType: .outgoing) : cell.setUI(messageType: .incoming)
         cell.bubbleWidthAnchor?.constant = estimateFrameForText(message.text!).width + 32
         return cell
     }
