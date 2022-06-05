@@ -13,8 +13,13 @@ class ChatCollectionViewController: UICollectionViewController {
     public var user: User? {
         didSet {
             navigationItem.title = user?.name
+            observeMessages()
         }
     }
+    
+    let cellIdentifier = "cellIdentifier"
+    
+    private var messages = [Message]()
     
     private lazy var containerView: UIView = {
         let view = UIView()
@@ -49,6 +54,8 @@ class ChatCollectionViewController: UICollectionViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionView.backgroundColor = UIColor.white
+        collectionView.register(ChatCollectionViewCell.self, forCellWithReuseIdentifier: cellIdentifier)
+        collectionView.alwaysBounceVertical = true
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.Custom.textDarkBlue]
         navigationController?.navigationBar.tintColor = UIColor.Custom.textDarkBlue
         configureUI()
@@ -87,7 +94,32 @@ class ChatCollectionViewController: UICollectionViewController {
         separatorLineView.heightAnchor.constraint(equalToConstant: 2).isActive = true
     }
     
+    private func observeMessages() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let userMessageRef = Database.database().reference().child("user-messages").child(uid)
+        userMessageRef.observe(.childAdded) { snapshot in
+            let messageId = snapshot.key
+            let messageRef = Database.database().reference().child("messages").child(messageId)
+            messageRef.observeSingleEvent(of: .value) { snapshot in
+                guard let dictionary = snapshot.value as? [String: AnyObject] else { return }
+                let message = Message()
+                message.fromId = dictionary["fromId"] as? String ?? ""
+                message.toId = dictionary["toId"] as? String ?? ""
+                message.text = dictionary["text"] as? String ?? ""
+                message.timestamp = dictionary["timestamp"] as? NSNumber ?? 0
+                if message.chatPartnerId() == self.user?.id {
+                    self.messages.append(message)
+                    DispatchQueue.main.async {
+                        self.collectionView.reloadData()
+                    }
+                }
+            } withCancel: { error in
+                print(error.localizedDescription)
+            }
+        }
+    }
     
+// MARK: ~ ACTIONS
     @objc func sendButtonTapped() {
         let ref = Database.database().reference().child("messages")
         let childRef = ref.childByAutoId()
@@ -113,6 +145,27 @@ class ChatCollectionViewController: UICollectionViewController {
         }
     }
     
+}
+
+// MARK: ~ COLLECTION VIEW
+extension ChatCollectionViewController {
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return messages.count
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! ChatCollectionViewCell
+        cell.backgroundColor = UIColor.Custom.ligthBlue
+        let message = messages[indexPath.item]
+        cell.textView.text = message.text
+        return cell
+    }
+}
+
+extension ChatCollectionViewController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: view.frame.width, height: 80)
+    }
 }
 
 extension ChatCollectionViewController: UITextFieldDelegate {

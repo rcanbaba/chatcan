@@ -105,9 +105,9 @@ class InboxViewController: UITableViewController {
         self.navigationItem.titleView = titleView
         containerView.centerXAnchor.constraint(equalTo: titleView.centerXAnchor).isActive = true
         containerView.centerYAnchor.constraint(equalTo: titleView.centerYAnchor).isActive = true
-        
-        navigationController?.navigationBar.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showChatController)))
-        navigationController?.navigationBar.isUserInteractionEnabled = true
+// not necessary to show own user
+//        navigationController?.navigationBar.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showChatController)))
+//        navigationController?.navigationBar.isUserInteractionEnabled = true
     }
     
     private func observeUserMessages() {
@@ -142,6 +142,12 @@ class InboxViewController: UITableViewController {
             }
         }
     }
+    
+    private func showChatController (user: User) {
+        let chatController = ChatCollectionViewController(collectionViewLayout: UICollectionViewFlowLayout())
+        chatController.user = user
+        navigationController?.pushViewController(chatController, animated: true)
+    }
 
     // MARK: ~ ACTIONS
     @objc func handleLogout () {
@@ -162,12 +168,6 @@ class InboxViewController: UITableViewController {
         messageNavigationController.modalPresentationStyle = .fullScreen
         present(messageNavigationController, animated: true, completion: nil)
     }
-
-    @objc func showChatController (user: User) {
-        let chatController = ChatCollectionViewController(collectionViewLayout: UICollectionViewFlowLayout())
-        chatController.user = user
-        navigationController?.pushViewController(chatController, animated: true)
-    }
 }
 
 // MARK: ~ TABLEVIEW
@@ -182,9 +182,28 @@ extension InboxViewController {
         return configureCell(cell: cell, indexPath: indexPath)
     }
     
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let message = messages[indexPath.row]
+        guard let chatPartnerId = message.chatPartnerId() else { return }
+        let ref = Database.database().reference().child("users").child(chatPartnerId)
+        ref.observeSingleEvent(of: .value) { snapshot in
+            if let value = snapshot.value as? NSDictionary {
+                let user = User()
+                user.id = chatPartnerId
+                user.name = value["name"] as? String ?? ""
+                user.email = value["email"] as? String ?? ""
+                user.profileImageUrl = value["profileImageUrl"] as? String ?? ""
+                self.showChatController(user: user)
+            }
+        } withCancel: { error in
+            print(error.localizedDescription)
+        }
+    }
+    
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 74
     }
+    
 }
 
 // MARK: ~ CELL
@@ -192,14 +211,7 @@ extension InboxViewController {
     private func configureCell(cell: UserTableViewCell, indexPath: IndexPath) -> UserTableViewCell {
         let message = messages[indexPath.row]
         
-        let chatPartnerId: String?
-        if message.fromId == Auth.auth().currentUser?.uid {
-            chatPartnerId = message.toId
-        } else {
-            chatPartnerId = message.fromId
-        }
-        
-        if let id = chatPartnerId {
+        if let id = message.chatPartnerId() {
             let ref = Database.database().reference().child("users").child(id)
             ref.observeSingleEvent(of: .value) { snapshot in
                 if let dictionary = snapshot.value as? [String: AnyObject] {

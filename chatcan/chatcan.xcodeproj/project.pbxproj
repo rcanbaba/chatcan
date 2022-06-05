@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B4601451284CD5DF00821EAF /* ChatCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4601450284CD5DF00821EAF /* ChatCollectionViewCell.swift */; };
 		B488D9AE28422E8700BCA876 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B488D9AD28422E8700BCA876 /* AppDelegate.swift */; };
 		B488D9B028422E8700BCA876 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B488D9AF28422E8700BCA876 /* SceneDelegate.swift */; };
 		B488D9B228422E8700BCA876 /* InboxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B488D9B128422E8700BCA876 /* InboxViewController.swift */; };
@@ -32,6 +33,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B4601450284CD5DF00821EAF /* ChatCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCollectionViewCell.swift; sourceTree = "<group>"; };
 		B488D9AA28422E8700BCA876 /* chatcan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = chatcan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B488D9AD28422E8700BCA876 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B488D9AF28422E8700BCA876 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -148,6 +150,7 @@
 			isa = PBXGroup;
 			children = (
 				B4D308852843B45B001C88AF /* UserTableViewCell.swift */,
+				B4601450284CD5DF00821EAF /* ChatCollectionViewCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -231,6 +234,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B4601451284CD5DF00821EAF /* ChatCollectionViewCell.swift in Sources */,
 				B488D9C32842740B00BCA876 /* LoginViewController.swift in Sources */,
 				B488D9CF2842879100BCA876 /* UITextFieldExtension.swift in Sources */,
 				B4D308802843A82F001C88AF /* MessageTableViewController.swift in Sources */,
