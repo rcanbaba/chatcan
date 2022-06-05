@@ -126,8 +126,8 @@ class InboxViewController: UITableViewController {
                     message.toId = value["toId"] as? String ?? ""
                     message.text = value["text"] as? String ?? ""
                     message.timestamp = value["timestamp"] as? NSNumber ?? 0
-                    if let toId = message.toId {
-                        self.messagesDictionary[toId] = message
+                    if let chatPartnerId = message.chatPartnerId() {
+                        self.messagesDictionary[chatPartnerId] = message
                         self.messages = Array(self.messagesDictionary.values)
                         self.messages.sort { message1, message2 in
                             return message1.timestamp?.intValue ?? 0 > message2.timestamp?.intValue ?? 0

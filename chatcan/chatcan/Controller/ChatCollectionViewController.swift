@@ -56,7 +56,9 @@ class ChatCollectionViewController: UICollectionViewController {
         collectionView.backgroundColor = UIColor.white
         collectionView.register(ChatCollectionViewCell.self, forCellWithReuseIdentifier: cellIdentifier)
         collectionView.alwaysBounceVertical = true
-        collectionView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 0, right: 0)
+        // top from navbar, bottom 108 height for send message input view
+        collectionView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 108, right: 0)
+        collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 100, right: 0)
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.Custom.textDarkBlue]
         navigationController?.navigationBar.tintColor = UIColor.Custom.textDarkBlue
         configureUI()
@@ -152,6 +154,11 @@ class ChatCollectionViewController: UICollectionViewController {
                 }
             }
         }
+    }
+    
+    // to device transition, UI fix
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        collectionView.collectionViewLayout.invalidateLayout()
     }
     
 }
