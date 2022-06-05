@@ -10,23 +10,26 @@ import Firebase
 
 class InboxViewController: UITableViewController {
     
+    let cellIdentifier = "cellIdentifier"
+    
     private var messageTableViewController: MessageTableViewController?
     
     private var messages = [Message]()
+    private var messagesDictionary = [String: Message]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         view.backgroundColor = .lightGray
-
+        tableView.register(UserTableViewCell.self, forCellReuseIdentifier: cellIdentifier)
         setNavigationBar()
         checkIfUserLoggedIn()
-        observeMessages()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
         checkIfUserLoggedIn()
+        observeUserMessages()
     }
     
     private func setNavigationBar() {
@@ -102,28 +105,51 @@ class InboxViewController: UITableViewController {
         self.navigationItem.titleView = titleView
         containerView.centerXAnchor.constraint(equalTo: titleView.centerXAnchor).isActive = true
         containerView.centerYAnchor.constraint(equalTo: titleView.centerYAnchor).isActive = true
-        
-        navigationController?.navigationBar.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showChatController)))
-        navigationController?.navigationBar.isUserInteractionEnabled = true
+// not necessary to show own user
+//        navigationController?.navigationBar.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showChatController)))
+//        navigationController?.navigationBar.isUserInteractionEnabled = true
     }
     
-    private func observeMessages() {
-        let ref = Database.database().reference().child("messages")
+    private func observeUserMessages() {
+        messages.removeAll()
+        messagesDictionary.removeAll()
+        tableView.reloadData()
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let ref = Database.database().reference().child("user-messages").child(uid)
         ref.observe(.childAdded) { snapshot in
-            if let value = snapshot.value as? NSDictionary {
-                let message = Message()
-                message.fromId = value["fromId"] as? String ?? ""
-                message.toId = value["toId"] as? String ?? ""
-                message.text = value["text"] as? String ?? ""
-                message.timestamp = value["timestamp"] as? NSNumber ?? 0
-                self.messages.append(message)
-                DispatchQueue.main.async { [weak self] in
-                    self?.tableView.reloadData()
+            let messageId = snapshot.key
+            let messagesReference = Database.database().reference().child("messages").child(messageId)
+            messagesReference.observeSingleEvent(of: .value) { snapshot in
+                if let value = snapshot.value as? NSDictionary {
+                    let message = Message()
+                    message.fromId = value["fromId"] as? String ?? ""
+                    message.toId = value["toId"] as? String ?? ""
+                    message.text = value["text"] as? String ?? ""
+                    message.timestamp = value["timestamp"] as? NSNumber ?? 0
+                    if let toId = message.toId {
+                        self.messagesDictionary[toId] = message
+                        self.messages = Array(self.messagesDictionary.values)
+                        self.messages.sort { message1, message2 in
+                            return message1.timestamp?.intValue ?? 0 > message2.timestamp?.intValue ?? 0
+                        }
+                    }
+                    DispatchQueue.main.async { [weak self] in
+                        self?.tableView.reloadData()
+                    }
                 }
+            } withCancel: { error in
+                print(error.localizedDescription)
             }
         }
     }
     
+    private func showChatController (user: User) {
+        let chatController = ChatCollectionViewController(collectionViewLayout: UICollectionViewFlowLayout())
+        chatController.user = user
+        navigationController?.pushViewController(chatController, animated: true)
+    }
+
+    // MARK: ~ ACTIONS
     @objc func handleLogout () {
         do {
             try Auth.auth().signOut()
@@ -142,33 +168,80 @@ class InboxViewController: UITableViewController {
         messageNavigationController.modalPresentationStyle = .fullScreen
         present(messageNavigationController, animated: true, completion: nil)
     }
-
-    @objc func showChatController (user: User) {
-        let chatController = ChatCollectionViewController(collectionViewLayout: UICollectionViewFlowLayout())
-        chatController.user = user
-        navigationController?.pushViewController(chatController, animated: true)
-    }
 }
 
+// MARK: ~ TABLEVIEW
 extension InboxViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return messages.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cellId")
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! UserTableViewCell
+        
+        return configureCell(cell: cell, indexPath: indexPath)
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let message = messages[indexPath.row]
-        cell.textLabel?.text = message.toId
+        guard let chatPartnerId = message.chatPartnerId() else { return }
+        let ref = Database.database().reference().child("users").child(chatPartnerId)
+        ref.observeSingleEvent(of: .value) { snapshot in
+            if let value = snapshot.value as? NSDictionary {
+                let user = User()
+                user.id = chatPartnerId
+                user.name = value["name"] as? String ?? ""
+                user.email = value["email"] as? String ?? ""
+                user.profileImageUrl = value["profileImageUrl"] as? String ?? ""
+                self.showChatController(user: user)
+            }
+        } withCancel: { error in
+            print(error.localizedDescription)
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 74
+    }
+    
+}
+
+// MARK: ~ CELL
+extension InboxViewController {
+    private func configureCell(cell: UserTableViewCell, indexPath: IndexPath) -> UserTableViewCell {
+        let message = messages[indexPath.row]
+        
+        if let id = message.chatPartnerId() {
+            let ref = Database.database().reference().child("users").child(id)
+            ref.observeSingleEvent(of: .value) { snapshot in
+                if let dictionary = snapshot.value as? [String: AnyObject] {
+                    cell.textLabel?.text = dictionary["name"] as? String
+                    
+                    if let profileImageUrl = dictionary["profileImageUrl"] as? String {
+                        cell.profileImageView.loadImageUsingCacheWithUrlString(urlString: profileImageUrl)
+                    }
+                }
+                print(snapshot)
+            } withCancel: { error in
+                print(error.localizedDescription)
+            }
+        }
+        
+        if let time = message.timestamp?.doubleValue {
+            let timestampDate = NSDate(timeIntervalSince1970: time)
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "hh:mm:ss a"
+            cell.timeLabel.text = dateFormatter.string(from: timestampDate as Date)
+        }
         cell.detailTextLabel?.text = message.text
         cell.backgroundColor = UIColor.clear
         return cell
-    }
+    }    
 }
 
+// MARK: ~ MessageTableViewControllerDelegate
 extension InboxViewController: MessageTableViewControllerDelegate {
     func userSelected(controller: UITableViewController, user: User) {
         showChatController(user: user)
     }
 }
-
-
