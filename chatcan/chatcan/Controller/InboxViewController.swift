@@ -24,12 +24,12 @@ class InboxViewController: UITableViewController {
         tableView.register(UserTableViewCell.self, forCellReuseIdentifier: cellIdentifier)
         setNavigationBar()
         checkIfUserLoggedIn()
-        observeMessages()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
         checkIfUserLoggedIn()
+        observeUserMessages()
     }
     
     private func setNavigationBar() {
@@ -110,30 +110,40 @@ class InboxViewController: UITableViewController {
         navigationController?.navigationBar.isUserInteractionEnabled = true
     }
     
-    private func observeMessages() {
-        let ref = Database.database().reference().child("messages")
+    private func observeUserMessages() {
+        messages.removeAll()
+        messagesDictionary.removeAll()
+        tableView.reloadData()
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let ref = Database.database().reference().child("user-messages").child(uid)
         ref.observe(.childAdded) { snapshot in
-            if let value = snapshot.value as? NSDictionary {
-                let message = Message()
-                message.fromId = value["fromId"] as? String ?? ""
-                message.toId = value["toId"] as? String ?? ""
-                message.text = value["text"] as? String ?? ""
-                message.timestamp = value["timestamp"] as? NSNumber ?? 0
-//                self.messages.append(message)
-                if let toId = message.toId {
-                    self.messagesDictionary[toId] = message
-                    self.messages = Array(self.messagesDictionary.values)
-                    self.messages.sort { message1, message2 in
-                        return message1.timestamp?.intValue ?? 0 > message2.timestamp?.intValue ?? 0
+            let messageId = snapshot.key
+            let messagesReference = Database.database().reference().child("messages").child(messageId)
+            messagesReference.observeSingleEvent(of: .value) { snapshot in
+                if let value = snapshot.value as? NSDictionary {
+                    let message = Message()
+                    message.fromId = value["fromId"] as? String ?? ""
+                    message.toId = value["toId"] as? String ?? ""
+                    message.text = value["text"] as? String ?? ""
+                    message.timestamp = value["timestamp"] as? NSNumber ?? 0
+                    if let toId = message.toId {
+                        self.messagesDictionary[toId] = message
+                        self.messages = Array(self.messagesDictionary.values)
+                        self.messages.sort { message1, message2 in
+                            return message1.timestamp?.intValue ?? 0 > message2.timestamp?.intValue ?? 0
+                        }
+                    }
+                    DispatchQueue.main.async { [weak self] in
+                        self?.tableView.reloadData()
                     }
                 }
-                DispatchQueue.main.async { [weak self] in
-                    self?.tableView.reloadData()
-                }
+            } withCancel: { error in
+                print(error.localizedDescription)
             }
         }
     }
-    
+
+    // MARK: ~ ACTIONS
     @objc func handleLogout () {
         do {
             try Auth.auth().signOut()
@@ -160,6 +170,7 @@ class InboxViewController: UITableViewController {
     }
 }
 
+// MARK: ~ TABLEVIEW
 extension InboxViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return messages.count
@@ -176,12 +187,20 @@ extension InboxViewController {
     }
 }
 
+// MARK: ~ CELL
 extension InboxViewController {
     private func configureCell(cell: UserTableViewCell, indexPath: IndexPath) -> UserTableViewCell {
         let message = messages[indexPath.row]
         
-        if let toId = message.toId {
-            let ref = Database.database().reference().child("users").child(toId)
+        let chatPartnerId: String?
+        if message.fromId == Auth.auth().currentUser?.uid {
+            chatPartnerId = message.toId
+        } else {
+            chatPartnerId = message.fromId
+        }
+        
+        if let id = chatPartnerId {
+            let ref = Database.database().reference().child("users").child(id)
             ref.observeSingleEvent(of: .value) { snapshot in
                 if let dictionary = snapshot.value as? [String: AnyObject] {
                     cell.textLabel?.text = dictionary["name"] as? String
@@ -189,7 +208,6 @@ extension InboxViewController {
                     if let profileImageUrl = dictionary["profileImageUrl"] as? String {
                         cell.profileImageView.loadImageUsingCacheWithUrlString(urlString: profileImageUrl)
                     }
-                    
                 }
                 print(snapshot)
             } withCancel: { error in
@@ -209,6 +227,7 @@ extension InboxViewController {
     }    
 }
 
+// MARK: ~ MessageTableViewControllerDelegate
 extension InboxViewController: MessageTableViewControllerDelegate {
     func userSelected(controller: UITableViewController, user: User) {
         showChatController(user: user)

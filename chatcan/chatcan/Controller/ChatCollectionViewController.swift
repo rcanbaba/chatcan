@@ -103,10 +103,14 @@ class ChatCollectionViewController: UICollectionViewController {
                 self.present(LoginViewController.getAlert(title: "Reference Error", message: error.localizedDescription), animated: true)
                 return
             } else {
-                self.dismiss(animated: true, completion: nil)
+                let userMessagesRef = Database.database().reference().child("user-messages").child(fromId)
+                let recipientUserMessagesRef = Database.database().reference().child("user-messages").child(toId)
+                if let messageId = childRef.key {
+                    userMessagesRef.updateChildValues([messageId : 1])
+                    recipientUserMessagesRef.updateChildValues([messageId : 1])
+                }
             }
         }
-        
     }
     
 }

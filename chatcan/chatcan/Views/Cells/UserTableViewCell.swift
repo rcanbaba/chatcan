@@ -23,7 +23,6 @@ class UserTableViewCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont.systemFont(ofSize: 14)
-        label.text = "HH:MM:YY"
         return label
     }()
 
