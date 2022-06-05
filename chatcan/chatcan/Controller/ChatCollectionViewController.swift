@@ -56,6 +56,7 @@ class ChatCollectionViewController: UICollectionViewController {
         collectionView.backgroundColor = UIColor.white
         collectionView.register(ChatCollectionViewCell.self, forCellWithReuseIdentifier: cellIdentifier)
         collectionView.alwaysBounceVertical = true
+        collectionView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 0, right: 0)
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.Custom.textDarkBlue]
         navigationController?.navigationBar.tintColor = UIColor.Custom.textDarkBlue
         configureUI()
@@ -119,6 +120,13 @@ class ChatCollectionViewController: UICollectionViewController {
         }
     }
     
+    // to estimate bubble size cell textview
+    private func estimateFrameForText(_ text: String) -> CGRect {
+        let size = CGSize(width: 200, height: 1000)
+        let options = NSStringDrawingOptions.usesFontLeading.union(.usesLineFragmentOrigin)
+        return NSString(string: text).boundingRect(with: size, options: options, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16)], context: nil)
+    }
+    
 // MARK: ~ ACTIONS
     @objc func sendButtonTapped() {
         let ref = Database.database().reference().child("messages")
@@ -135,6 +143,7 @@ class ChatCollectionViewController: UICollectionViewController {
                 self.present(LoginViewController.getAlert(title: "Reference Error", message: error.localizedDescription), animated: true)
                 return
             } else {
+                self.inputTextField.text = nil
                 let userMessagesRef = Database.database().reference().child("user-messages").child(fromId)
                 let recipientUserMessagesRef = Database.database().reference().child("user-messages").child(toId)
                 if let messageId = childRef.key {
@@ -155,20 +164,25 @@ extension ChatCollectionViewController {
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! ChatCollectionViewCell
-        cell.backgroundColor = UIColor.Custom.ligthBlue
         let message = messages[indexPath.item]
         cell.textView.text = message.text
+        cell.bubbleWidthAnchor?.constant = estimateFrameForText(message.text!).width + 32
         return cell
     }
 }
 
 extension ChatCollectionViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: view.frame.width, height: 80)
+        var height: CGFloat = 80
+        if let text = messages[indexPath.item].text {
+            height = estimateFrameForText(text).height + 20
+        }        
+        return CGSize(width: view.frame.width, height: height)
     }
 }
 
 extension ChatCollectionViewController: UITextFieldDelegate {
+    // to send message by tapping enter
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         sendButtonTapped()
         return true
