@@ -20,6 +20,7 @@ class ChatCollectionViewController: UICollectionViewController {
     let cellIdentifier = "cellIdentifier"
     
     private var messages = [Message]()
+    private var containerViewBottomAnchor: NSLayoutConstraint?
     
     private lazy var containerView: UIView = {
         let view = UIView()
@@ -56,9 +57,18 @@ class ChatCollectionViewController: UICollectionViewController {
         collectionView.backgroundColor = UIColor.white
         collectionView.register(ChatCollectionViewCell.self, forCellWithReuseIdentifier: cellIdentifier)
         collectionView.alwaysBounceVertical = true
+        // top from navbar, bottom 108 height for send message input view
+        collectionView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 108, right: 0)
+        collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 100, right: 0)
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.Custom.textDarkBlue]
         navigationController?.navigationBar.tintColor = UIColor.Custom.textDarkBlue
         configureUI()
+        setupKeyboardObservers()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        NotificationCenter.default.removeObserver(self)
     }
     
     private func configureUI() {
@@ -68,7 +78,8 @@ class ChatCollectionViewController: UICollectionViewController {
     private func configureInputComponents() {
         view.addSubview(containerView)
         containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-        containerView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        containerViewBottomAnchor = containerView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        containerViewBottomAnchor?.isActive = true
         containerView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
         containerView.heightAnchor.constraint(equalToConstant: 100).isActive = true
         
@@ -92,6 +103,11 @@ class ChatCollectionViewController: UICollectionViewController {
         separatorLineView.widthAnchor.constraint(equalTo: containerView.widthAnchor).isActive = true
         separatorLineView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: -2).isActive = true
         separatorLineView.heightAnchor.constraint(equalToConstant: 2).isActive = true
+    }
+    
+    private func setupKeyboardObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
     
     private func observeMessages() {
@@ -119,6 +135,13 @@ class ChatCollectionViewController: UICollectionViewController {
         }
     }
     
+    // to estimate bubble size cell textview
+    private func estimateFrameForText(_ text: String) -> CGRect {
+        let size = CGSize(width: 200, height: 1000)
+        let options = NSStringDrawingOptions.usesFontLeading.union(.usesLineFragmentOrigin)
+        return NSString(string: text).boundingRect(with: size, options: options, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16)], context: nil)
+    }
+    
 // MARK: ~ ACTIONS
     @objc func sendButtonTapped() {
         let ref = Database.database().reference().child("messages")
@@ -135,6 +158,7 @@ class ChatCollectionViewController: UICollectionViewController {
                 self.present(LoginViewController.getAlert(title: "Reference Error", message: error.localizedDescription), animated: true)
                 return
             } else {
+                self.inputTextField.text = nil
                 let userMessagesRef = Database.database().reference().child("user-messages").child(fromId)
                 let recipientUserMessagesRef = Database.database().reference().child("user-messages").child(toId)
                 if let messageId = childRef.key {
@@ -143,6 +167,31 @@ class ChatCollectionViewController: UICollectionViewController {
                 }
             }
         }
+    }
+    
+// MARK: ~ NOTIFS - keyboard
+    @objc func handleKeyboardWillShow(_ notification: Notification) {
+        let keyboardFrame = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as AnyObject).cgRectValue
+        let keyboardDuration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as AnyObject).doubleValue
+        
+        containerViewBottomAnchor?.constant = -keyboardFrame!.height + 32
+        UIView.animate(withDuration: keyboardDuration!, animations: {
+            self.view.layoutIfNeeded()
+        })
+    }
+    
+    @objc func handleKeyboardWillHide(_ notification: Notification) {
+        let keyboardDuration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as AnyObject).doubleValue
+        
+        containerViewBottomAnchor?.constant = 0
+        UIView.animate(withDuration: keyboardDuration!, animations: {
+            self.view.layoutIfNeeded()
+        })
+    }
+    
+    // to device transition, UI fix
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        collectionView.collectionViewLayout.invalidateLayout()
     }
     
 }
@@ -155,20 +204,29 @@ extension ChatCollectionViewController {
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! ChatCollectionViewCell
-        cell.backgroundColor = UIColor.Custom.ligthBlue
         let message = messages[indexPath.item]
         cell.textView.text = message.text
+        if let profileImageUrl = user?.profileImageUrl {
+            cell.profileImageView.loadImageUsingCacheWithUrlString(urlString: profileImageUrl)
+        }
+        message.fromId == Auth.auth().currentUser?.uid ? cell.setUI(messageType: .outgoing) : cell.setUI(messageType: .incoming)
+        cell.bubbleWidthAnchor?.constant = estimateFrameForText(message.text!).width + 32
         return cell
     }
 }
 
 extension ChatCollectionViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: view.frame.width, height: 80)
+        var height: CGFloat = 80
+        if let text = messages[indexPath.item].text {
+            height = estimateFrameForText(text).height + 20
+        }        
+        return CGSize(width: view.frame.width, height: height)
     }
 }
 
 extension ChatCollectionViewController: UITextFieldDelegate {
+    // to send message by tapping enter
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         sendButtonTapped()
         return true
