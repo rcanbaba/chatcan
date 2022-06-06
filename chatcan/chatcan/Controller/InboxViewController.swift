@@ -221,7 +221,6 @@ extension InboxViewController {
                         cell.profileImageView.loadImageUsingCacheWithUrlString(urlString: profileImageUrl)
                     }
                 }
-                print(snapshot)
             } withCancel: { error in
                 print(error.localizedDescription)
             }
