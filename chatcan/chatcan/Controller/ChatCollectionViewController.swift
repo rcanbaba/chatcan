@@ -220,8 +220,9 @@ extension ChatCollectionViewController: UICollectionViewDelegateFlowLayout {
         var height: CGFloat = 80
         if let text = messages[indexPath.item].text {
             height = estimateFrameForText(text).height + 20
-        }        
-        return CGSize(width: view.frame.width, height: height)
+        }
+        let width = UIScreen.main.bounds.width
+        return CGSize(width: width, height: height)
     }
 }
 
