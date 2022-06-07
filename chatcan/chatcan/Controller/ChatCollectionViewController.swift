@@ -123,11 +123,9 @@ class ChatCollectionViewController: UICollectionViewController {
                 message.toId = dictionary["toId"] as? String ?? ""
                 message.text = dictionary["text"] as? String ?? ""
                 message.timestamp = dictionary["timestamp"] as? NSNumber ?? 0
-                if message.chatPartnerId() == self.user?.id {
-                    self.messages.append(message)
-                    DispatchQueue.main.async {
-                        self.collectionView.reloadData()
-                    }
+                self.messages.append(message)
+                DispatchQueue.main.async {
+                    self.collectionView.reloadData()
                 }
             } withCancel: { error in
                 print(error.localizedDescription)

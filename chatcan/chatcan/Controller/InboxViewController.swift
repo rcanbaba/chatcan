@@ -16,7 +16,7 @@ class InboxViewController: UITableViewController {
     
     private var messages = [Message]()
     private var messagesDictionary = [String: Message]()
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -95,7 +95,7 @@ class InboxViewController: UITableViewController {
         let nameLabel = UILabel()
         nameLabel.text = user.name
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
-                
+        
         containerView.addSubview(nameLabel)
         nameLabel.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8).isActive = true
         nameLabel.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor).isActive = true
@@ -105,9 +105,6 @@ class InboxViewController: UITableViewController {
         self.navigationItem.titleView = titleView
         containerView.centerXAnchor.constraint(equalTo: titleView.centerXAnchor).isActive = true
         containerView.centerYAnchor.constraint(equalTo: titleView.centerYAnchor).isActive = true
-// not necessary to show own user
-//        navigationController?.navigationBar.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showChatController)))
-//        navigationController?.navigationBar.isUserInteractionEnabled = true
     }
     
     private func observeUserMessages() {
@@ -123,32 +120,35 @@ class InboxViewController: UITableViewController {
             let userId = snapshot.key
             Database.database().reference().child("user-messages").child(uid).child(userId).observeSingleEvent(of: .childAdded) { snapshot in
                 let messageId = snapshot.key
-                let messagesReference = Database.database().reference().child("messages").child(messageId)
-                messagesReference.observeSingleEvent(of: .value) { snapshot in
-                    if let value = snapshot.value as? NSDictionary {
-                        let message = Message()
-                        message.fromId = value["fromId"] as? String ?? ""
-                        message.toId = value["toId"] as? String ?? ""
-                        message.text = value["text"] as? String ?? ""
-                        message.timestamp = value["timestamp"] as? NSNumber ?? 0
-                        if let chatPartnerId = message.chatPartnerId() {
-                            self.messagesDictionary[chatPartnerId] = message
-                            self.messages = Array(self.messagesDictionary.values)
-                            self.messages.sort(by: { (message1, message2) -> Bool in
-                                return Int(truncating: message1.timestamp ?? 0) > Int(truncating: message2.timestamp ?? 0)
-                            })
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-                                self?.tableView.reloadData()
-                            }
-                        }
-                    }
-                } withCancel: { error in
-                    print(error.localizedDescription)
-                }
-                
+                self.fetchMessageAndReloadTable(messageId: messageId)
             } withCancel: { error in
                 print(error.localizedDescription)
             }
+        }
+    }
+    
+    private func fetchMessageAndReloadTable(messageId: String) {
+        let messagesReference = Database.database().reference().child("messages").child(messageId)
+        messagesReference.observeSingleEvent(of: .value) { snapshot in
+            if let value = snapshot.value as? NSDictionary {
+                let message = Message()
+                message.fromId = value["fromId"] as? String ?? ""
+                message.toId = value["toId"] as? String ?? ""
+                message.text = value["text"] as? String ?? ""
+                message.timestamp = value["timestamp"] as? NSNumber ?? 0
+                if let chatPartnerId = message.chatPartnerId() {
+                    self.messagesDictionary[chatPartnerId] = message
+                    self.messages = Array(self.messagesDictionary.values)
+                    self.messages.sort(by: { (message1, message2) -> Bool in
+                        return Int(truncating: message1.timestamp ?? 0) > Int(truncating: message2.timestamp ?? 0)
+                    })
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                        self?.tableView.reloadData()
+                    }
+                }
+            }
+        } withCancel: { error in
+            print(error.localizedDescription)
         }
     }
     
@@ -157,7 +157,7 @@ class InboxViewController: UITableViewController {
         chatController.user = user
         navigationController?.pushViewController(chatController, animated: true)
     }
-
+    
     // MARK: ~ ACTIONS
     @objc func handleLogout () {
         do {
@@ -244,7 +244,7 @@ extension InboxViewController {
         cell.detailTextLabel?.text = message.text
         cell.backgroundColor = UIColor.clear
         return cell
-    }    
+    }
 }
 
 // MARK: ~ MessageTableViewControllerDelegate
