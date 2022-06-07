@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B4601451284CD5DF00821EAF /* ChatCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4601450284CD5DF00821EAF /* ChatCollectionViewCell.swift */; };
+		B4601453284FCCDC00821EAF /* GradientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4601452284FCCDC00821EAF /* GradientView.swift */; };
 		B488D9AE28422E8700BCA876 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B488D9AD28422E8700BCA876 /* AppDelegate.swift */; };
 		B488D9B028422E8700BCA876 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B488D9AF28422E8700BCA876 /* SceneDelegate.swift */; };
 		B488D9B228422E8700BCA876 /* InboxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B488D9B128422E8700BCA876 /* InboxViewController.swift */; };
@@ -34,6 +35,7 @@
 
 /* Begin PBXFileReference section */
 		B4601450284CD5DF00821EAF /* ChatCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCollectionViewCell.swift; sourceTree = "<group>"; };
+		B4601452284FCCDC00821EAF /* GradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientView.swift; sourceTree = "<group>"; };
 		B488D9AA28422E8700BCA876 /* chatcan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = chatcan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B488D9AD28422E8700BCA876 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B488D9AF28422E8700BCA876 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -71,6 +73,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B4601454284FCCF900821EAF /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				B4D3087D2842C618001C88AF /* SegmentedControlView.swift */,
+				B4601452284FCCDC00821EAF /* GradientView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		B488D9A128422E8700BCA876 = {
 			isa = PBXGroup;
 			children = (
@@ -130,9 +141,9 @@
 		B488D9C9284278DB00BCA876 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B4601454284FCCF900821EAF /* Components */,
 				B4D308842843B43E001C88AF /* Cells */,
 				B488D9CA284278F200BCA876 /* LoginView.swift */,
-				B4D3087D2842C618001C88AF /* SegmentedControlView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -242,6 +253,7 @@
 				B4D308862843B45B001C88AF /* UserTableViewCell.swift in Sources */,
 				B488D9B228422E8700BCA876 /* InboxViewController.swift in Sources */,
 				B488D9C82842780900BCA876 /* UIViewControllerExtension.swift in Sources */,
+				B4601453284FCCDC00821EAF /* GradientView.swift in Sources */,
 				B488D9C5284275B200BCA876 /* UIColorExtension.swift in Sources */,
 				B4D3088828441344001C88AF /* UIImageViewExtension.swift in Sources */,
 				B488D9AE28422E8700BCA876 /* AppDelegate.swift in Sources */,

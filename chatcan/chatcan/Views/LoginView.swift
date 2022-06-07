@@ -23,6 +23,8 @@ class LoginView: UIView {
         segment.tintColor = UIColor.white
         segment.selectedSegmentIndex = 1
         segment.addTarget(self, action: #selector(handleLoginRegisterChange), for: .valueChanged)
+        segment.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        segment.selectedSegmentTintColor = UIColor.Custom.purple2
         return segment
     }()
     
@@ -39,8 +41,8 @@ class LoginView: UIView {
         view.backgroundColor = UIColor.Login.background
         view.translatesAutoresizingMaskIntoConstraints = false
         view.layer.borderColor = UIColor.Custom.purple2.cgColor
-        view.layer.borderWidth = 16.0
-        view.layer.cornerRadius = 32.0
+        view.layer.borderWidth = 15.0
+        view.layer.cornerRadius = 30.0
         return view
     }()
     
@@ -119,6 +121,28 @@ class LoginView: UIView {
         return imageView
     }()
     
+    private lazy var topGradientView: GradientView = {
+       let view = GradientView()
+        view.clipsToBounds = true
+        view.gradientLayer.locations = [0.0, 1.0]
+        view.gradientLayer.startPoint = CGPoint(x: 1.0, y: 0.0)
+        view.gradientLayer.endPoint = CGPoint(x: 1.0, y: 1.0)
+        view.gradientLayer.colors = [UIColor.black.cgColor, UIColor.black.withAlphaComponent(0.0).cgColor]
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    private lazy var bottomGradientView: GradientView = {
+       let view = GradientView()
+        view.clipsToBounds = true
+        view.gradientLayer.locations = [0.0, 1.0]
+        view.gradientLayer.startPoint = CGPoint(x: 1.0, y: 0.0)
+        view.gradientLayer.endPoint = CGPoint(x: 1.0, y: 1.0)
+        view.gradientLayer.colors = [UIColor.black.withAlphaComponent(0.0).cgColor, UIColor.black.cgColor]
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         configureUI()
@@ -135,6 +159,8 @@ class LoginView: UIView {
     
     private func configureUI() {
         addSubview(borderView)
+        addSubview(topGradientView)
+        addSubview(bottomGradientView)
         addSubview(userInputView)
         addSubview(loginRegisterButton)
         addSubview(profileImageView)
@@ -147,6 +173,7 @@ class LoginView: UIView {
         configureProfileImageView()
         configureSegmentedControlView()
         configureLogoImageView()
+        configureGradientViews()
     }
     
 
@@ -241,6 +268,21 @@ class LoginView: UIView {
             logoImageView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -42),
             logoImageView.widthAnchor.constraint(equalToConstant: 100),
             logoImageView.heightAnchor.constraint(equalToConstant: 100)
+        ])
+    }
+    
+    private func configureGradientViews() {
+        NSLayoutConstraint.activate([
+            topGradientView.topAnchor.constraint(equalTo: topAnchor),
+            topGradientView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            topGradientView.heightAnchor.constraint(equalToConstant: 300),
+            topGradientView.widthAnchor.constraint(equalTo: widthAnchor)
+        ])        
+        NSLayoutConstraint.activate([
+            bottomGradientView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            bottomGradientView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            bottomGradientView.heightAnchor.constraint(equalToConstant: 300),
+            bottomGradientView.widthAnchor.constraint(equalTo: widthAnchor)
         ])
     }
     

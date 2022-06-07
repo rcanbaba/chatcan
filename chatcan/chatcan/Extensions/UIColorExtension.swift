@@ -36,12 +36,13 @@ extension UIColor {
         static let gray = UIColor("797084")
         static let borderGray = UIColor("AB9FBA")
         static let purple1 = UIColor("6F37B7")
-        static let purple2 = UIColor("5D00D7")
+        static let purple2 = UIColor("5A3C5A")
     }
     
     struct Login {
+        static let blackbg = UIColor("5A3C5A").withAlphaComponent(0.3)
         static let background = UIColor("AAAAE6")
-        static let button = UIColor("5D00D7")
+        static let button = UIColor("5A3C5A")
     }
 
 }

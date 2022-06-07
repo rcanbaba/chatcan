@@ -23,7 +23,7 @@ class LoginViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = UIColor.Login.background
+        view.backgroundColor = UIColor.Login.blackbg
         setNeedsStatusBarAppearanceUpdate()
         loginView.delegate = self
     }
