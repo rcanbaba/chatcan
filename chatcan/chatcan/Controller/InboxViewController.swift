@@ -111,32 +111,38 @@ class InboxViewController: UITableViewController {
     }
     
     private func observeUserMessages() {
-//        messages.removeAll()
-//        messagesDictionary.removeAll()
-//        tableView.reloadData()
+        //        messages.removeAll()
+        //        messagesDictionary.removeAll()
+        //        tableView.reloadData()
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let ref = Database.database().reference().child("user-messages").child(uid)
         ref.observe(.childAdded) { snapshot in
-            let messageId = snapshot.key
-            let messagesReference = Database.database().reference().child("messages").child(messageId)
-            messagesReference.observeSingleEvent(of: .value) { snapshot in
-                if let value = snapshot.value as? NSDictionary {
-                    let message = Message()
-                    message.fromId = value["fromId"] as? String ?? ""
-                    message.toId = value["toId"] as? String ?? ""
-                    message.text = value["text"] as? String ?? ""
-                    message.timestamp = value["timestamp"] as? NSNumber ?? 0
-                    if let chatPartnerId = message.chatPartnerId() {
-                        self.messagesDictionary[chatPartnerId] = message
-                        self.messages = Array(self.messagesDictionary.values)
-                        self.messages.sort(by: { (message1, message2) -> Bool in
-                            return Int(truncating: message1.timestamp ?? 0) > Int(truncating: message2.timestamp ?? 0)
-                        })
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-                            self?.tableView.reloadData()
+            let userId = snapshot.key
+            Database.database().reference().child("user-messages").child(uid).child(userId).observeSingleEvent(of: .childAdded) { snapshot in
+                let messageId = snapshot.key
+                let messagesReference = Database.database().reference().child("messages").child(messageId)
+                messagesReference.observeSingleEvent(of: .value) { snapshot in
+                    if let value = snapshot.value as? NSDictionary {
+                        let message = Message()
+                        message.fromId = value["fromId"] as? String ?? ""
+                        message.toId = value["toId"] as? String ?? ""
+                        message.text = value["text"] as? String ?? ""
+                        message.timestamp = value["timestamp"] as? NSNumber ?? 0
+                        if let chatPartnerId = message.chatPartnerId() {
+                            self.messagesDictionary[chatPartnerId] = message
+                            self.messages = Array(self.messagesDictionary.values)
+                            self.messages.sort(by: { (message1, message2) -> Bool in
+                                return Int(truncating: message1.timestamp ?? 0) > Int(truncating: message2.timestamp ?? 0)
+                            })
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                                self?.tableView.reloadData()
+                            }
                         }
                     }
+                } withCancel: { error in
+                    print(error.localizedDescription)
                 }
+                
             } withCancel: { error in
                 print(error.localizedDescription)
             }
