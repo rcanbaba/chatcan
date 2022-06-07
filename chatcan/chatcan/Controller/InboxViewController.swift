@@ -111,9 +111,12 @@ class InboxViewController: UITableViewController {
     }
     
     private func observeUserMessages() {
-        //        messages.removeAll()
-        //        messagesDictionary.removeAll()
-        //        tableView.reloadData()
+        messages.removeAll()
+        messagesDictionary.removeAll()
+        tableView.reloadData()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.tableView.reloadData()
+        }
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let ref = Database.database().reference().child("user-messages").child(uid)
         ref.observe(.childAdded) { snapshot in
