@@ -24,9 +24,8 @@ class ChatCollectionViewController: UICollectionViewController {
     
     private lazy var containerView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor.Custom.ligthBlue
+        view.backgroundColor = UIColor.lightGray
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.layer.cornerRadius = 10.0
         return view
     }()
     
@@ -44,12 +43,23 @@ class ChatCollectionViewController: UICollectionViewController {
     
     private lazy var inputTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "Enter message..."
+        textField.placeholder = " Enter message..."
         textField.setPlaceHolderColor(UIColor.Login.background)
         textField.textColor = UIColor.Custom.textDarkBlue
         textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.backgroundColor = UIColor.Custom.ligthBlue
+        textField.layer.cornerRadius = 12.0
         textField.delegate = self
         return textField
+    }()
+    
+    private lazy var uploadImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.isUserInteractionEnabled = true
+        imageView.image = UIImage(named: "upload-image-msg-icon")
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(uploadImageTaped)))
+        return imageView
     }()
 
     override func viewDidLoad() {
@@ -83,6 +93,12 @@ class ChatCollectionViewController: UICollectionViewController {
         containerView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
         containerView.heightAnchor.constraint(equalToConstant: 100).isActive = true
         
+        containerView.addSubview(uploadImageView)
+        uploadImageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 8).isActive = true
+        uploadImageView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 12).isActive = true
+        uploadImageView.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        uploadImageView.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        
         containerView.addSubview(sendButton)
         sendButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -12).isActive = true
         sendButton.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 8).isActive = true
@@ -90,10 +106,10 @@ class ChatCollectionViewController: UICollectionViewController {
         sendButton.heightAnchor.constraint(equalTo: containerView.heightAnchor, constant: -48).isActive = true
         
         containerView.addSubview(inputTextField)
-        inputTextField.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 12).isActive = true
-        inputTextField.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 8).isActive = true
+        inputTextField.leadingAnchor.constraint(equalTo: uploadImageView.trailingAnchor, constant: 8).isActive = true
+        inputTextField.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 14).isActive = true
         inputTextField.trailingAnchor.constraint(equalTo: sendButton.leadingAnchor, constant: -8).isActive = true
-        inputTextField.heightAnchor.constraint(equalTo: containerView.heightAnchor, constant: -48).isActive = true
+        inputTextField.heightAnchor.constraint(equalTo: containerView.heightAnchor, constant: -60).isActive = true
         
         let separatorLineView = UIView()
         separatorLineView.backgroundColor = UIColor.Custom.textDarkBlue
@@ -102,7 +118,7 @@ class ChatCollectionViewController: UICollectionViewController {
         separatorLineView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor).isActive = true
         separatorLineView.widthAnchor.constraint(equalTo: containerView.widthAnchor).isActive = true
         separatorLineView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: -2).isActive = true
-        separatorLineView.heightAnchor.constraint(equalToConstant: 2).isActive = true
+        separatorLineView.heightAnchor.constraint(equalToConstant: 1).isActive = true
     }
     
     private func setupKeyboardObservers() {
@@ -165,6 +181,15 @@ class ChatCollectionViewController: UICollectionViewController {
                 }
             }
         }
+    }
+    
+    @objc func uploadImageTaped() {
+        let imagePickerController = UIImagePickerController()
+        
+        imagePickerController.allowsEditing = true
+       // imagePickerController.delegate = self
+        
+        present(imagePickerController, animated: true, completion: nil)
     }
     
 // MARK: ~ NOTIFS - keyboard
