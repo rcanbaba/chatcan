@@ -139,6 +139,7 @@ class ChatCollectionViewController: UICollectionViewController {
                 message.toId = dictionary["toId"] as? String ?? ""
                 message.text = dictionary["text"] as? String ?? ""
                 message.timestamp = dictionary["timestamp"] as? NSNumber ?? 0
+                message.imageUrl = dictionary["imageUrl"] as? String ?? ""
                 self.messages.append(message)
                 DispatchQueue.main.async {
                     self.collectionView.reloadData()
@@ -154,6 +155,56 @@ class ChatCollectionViewController: UICollectionViewController {
         let size = CGSize(width: 200, height: 1000)
         let options = NSStringDrawingOptions.usesFontLeading.union(.usesLineFragmentOrigin)
         return NSString(string: text).boundingRect(with: size, options: options, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16)], context: nil)
+    }
+    
+    private func uploadImageToFirebaseStorage(image: UIImage) {
+        let imageName = NSUUID().uuidString
+        let storageRef = Storage.storage().reference().child("messsage_images").child("\(imageName).jpg")
+        
+        if let uploadData = image.jpegData(compressionQuality: 0.5) {
+            storageRef.putData(uploadData, metadata: nil) { metadata, error in
+                if let error = error {
+                    self.present(ChatCollectionViewController.getAlert(title: "Upload Error", message: error.localizedDescription), animated: true)
+                    return
+                } else {
+                    storageRef.downloadURL { url, error in
+                        if let error = error {
+                            self.present(ChatCollectionViewController.getAlert(title: "Download Url Error", message: error.localizedDescription), animated: true)
+                            return
+                        } else {
+                            if let url = url?.absoluteString {
+                                self.sendImageMessage(imageUrl: url)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private func sendImageMessage(imageUrl: String) {
+        let ref = Database.database().reference().child("messages")
+        let childRef = ref.childByAutoId()
+        let toId = user!.id!
+        let fromId = Auth.auth().currentUser!.uid
+        let timestamp: NSNumber = NSNumber(value: Int(NSDate().timeIntervalSince1970))
+        
+        let values = ["imageUrl": imageUrl, "toId": toId, "fromId": fromId, "timestamp": timestamp ] as [String : Any]
+        
+        childRef.updateChildValues(values) { error, reference in
+            if let error = error {
+                self.present(LoginViewController.getAlert(title: "Reference Error", message: error.localizedDescription), animated: true)
+                return
+            } else {
+                self.inputTextField.text = nil
+                let userMessagesRef = Database.database().reference().child("user-messages").child(fromId).child(toId)
+                let recipientUserMessagesRef = Database.database().reference().child("user-messages").child(toId).child(fromId)
+                if let messageId = childRef.key {
+                    userMessagesRef.updateChildValues([messageId : 1])
+                    recipientUserMessagesRef.updateChildValues([messageId : 1])
+                }
+            }
+        }
     }
     
 // MARK: ~ ACTIONS
@@ -185,10 +236,8 @@ class ChatCollectionViewController: UICollectionViewController {
     
     @objc func uploadImageTaped() {
         let imagePickerController = UIImagePickerController()
-        
         imagePickerController.allowsEditing = true
-       // imagePickerController.delegate = self
-        
+        imagePickerController.delegate = self
         present(imagePickerController, animated: true, completion: nil)
     }
     
@@ -232,8 +281,16 @@ extension ChatCollectionViewController {
         if let profileImageUrl = user?.profileImageUrl {
             cell.profileImageView.loadImageUsingCacheWithUrlString(urlString: profileImageUrl)
         }
+        if let messageImageUrl = message.imageUrl {
+            cell.messageImageView.loadImageUsingCacheWithUrlString(urlString: messageImageUrl)
+            cell.messageImageView.isHidden = false
+        } else {
+            cell.messageImageView.isHidden = true
+        }
         message.fromId == Auth.auth().currentUser?.uid ? cell.setUI(messageType: .outgoing) : cell.setUI(messageType: .incoming)
-        cell.bubbleWidthAnchor?.constant = estimateFrameForText(message.text!).width + 32
+        if let text = message.text {
+            cell.bubbleWidthAnchor?.constant = estimateFrameForText(text).width + 32
+        }
         return cell
     }
 }
@@ -256,4 +313,23 @@ extension ChatCollectionViewController: UITextFieldDelegate {
         return true
     }
     
+}
+
+extension ChatCollectionViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate  {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        guard let mediaType = info[UIImagePickerController.InfoKey.mediaType] as? String else {
+            return
+        }
+        if mediaType == MediaType.photo.rawValue {
+            guard let image = info[.editedImage] as? UIImage else {
+                return
+            }
+            uploadImageToFirebaseStorage(image: image)
+        }
+        dismiss(animated: true, completion: nil)
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        dismiss(animated: true, completion: nil)
+    }
 }
