@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		B4601451284CD5DF00821EAF /* ChatCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4601450284CD5DF00821EAF /* ChatCollectionViewCell.swift */; };
 		B4601453284FCCDC00821EAF /* GradientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4601452284FCCDC00821EAF /* GradientView.swift */; };
+		B46014562850739800821EAF /* Enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = B46014552850739800821EAF /* Enums.swift */; };
 		B488D9AE28422E8700BCA876 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B488D9AD28422E8700BCA876 /* AppDelegate.swift */; };
 		B488D9B028422E8700BCA876 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B488D9AF28422E8700BCA876 /* SceneDelegate.swift */; };
 		B488D9B228422E8700BCA876 /* InboxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B488D9B128422E8700BCA876 /* InboxViewController.swift */; };
@@ -36,6 +37,7 @@
 /* Begin PBXFileReference section */
 		B4601450284CD5DF00821EAF /* ChatCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCollectionViewCell.swift; sourceTree = "<group>"; };
 		B4601452284FCCDC00821EAF /* GradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientView.swift; sourceTree = "<group>"; };
+		B46014552850739800821EAF /* Enums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Enums.swift; sourceTree = "<group>"; };
 		B488D9AA28422E8700BCA876 /* chatcan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = chatcan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B488D9AD28422E8700BCA876 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B488D9AF28422E8700BCA876 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -153,6 +155,7 @@
 			children = (
 				B4D308822843B18A001C88AF /* User.swift */,
 				B4B1383D28466F4B00847331 /* Message.swift */,
+				B46014552850739800821EAF /* Enums.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -263,6 +266,7 @@
 				B4B1383E28466F4B00847331 /* Message.swift in Sources */,
 				B488D9B028422E8700BCA876 /* SceneDelegate.swift in Sources */,
 				B4B1383C2845DB9B00847331 /* ChatCollectionViewController.swift in Sources */,
+				B46014562850739800821EAF /* Enums.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

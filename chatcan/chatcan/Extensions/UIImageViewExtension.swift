@@ -19,7 +19,7 @@ extension UIImageView {
         }
         
         guard let url = URL(string: urlString) else {
-            self.image = UIImage(named: "empty-profile-icon")
+           // self.image = UIImage(named: "empty-profile-icon")
             return
         }
         

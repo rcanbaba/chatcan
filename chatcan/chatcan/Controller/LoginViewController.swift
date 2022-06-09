@@ -12,11 +12,6 @@ import FirebaseAuth
 
 class LoginViewController: UIViewController {
     
-    private enum MediaType: String {
-        case photo = "public.image"
-        case video = "public.movie"
-    }
-    
     private lazy var loginView = LoginView()
     private var profileImage = UIImage()
     
