@@ -12,7 +12,13 @@ enum MessageType: Int {
     case outgoing = 1
 }
 
+protocol ChatCollectionViewCellDelegate: AnyObject {
+    func imageTapped(cell: ChatCollectionViewCell, imageView: UIImageView)
+}
+
 class ChatCollectionViewCell: UICollectionViewCell {
+    
+    public weak var delegate: ChatCollectionViewCellDelegate?
     
     public lazy var textView: UITextView = {
         let textview = UITextView()
@@ -43,12 +49,14 @@ class ChatCollectionViewCell: UICollectionViewCell {
         return imageView
     }()
     
-    let messageImageView: UIImageView = {
+    public lazy var messageImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.layer.cornerRadius = 16.0
         imageView.layer.masksToBounds = true
         imageView.contentMode = .scaleAspectFill
+        imageView.isUserInteractionEnabled = true
+        imageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(imageTapped)))
         return imageView
     }()
     
@@ -91,6 +99,12 @@ class ChatCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+// MARK: ACTIONS
+    @objc func imageTapped(_ tapGesture: UITapGestureRecognizer) {
+        if let imageView = tapGesture.view as? UIImageView {
+            delegate?.imageTapped(cell: self, imageView: imageView)
+        }
+    }
 }
 
 extension ChatCollectionViewCell {

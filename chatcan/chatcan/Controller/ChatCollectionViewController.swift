@@ -216,6 +216,47 @@ class ChatCollectionViewController: UICollectionViewController {
         sendMessage(properties: properties)
     }
     
+    private var blackBackgroundView: UIView?
+    private var startingFrame: CGRect?
+    private var startingImageView: UIImageView?
+    
+    private func performZoomIn(imageView: UIImageView) {
+        self.startingImageView = imageView
+        self.startingImageView?.isHidden = true
+        
+        startingFrame = imageView.superview?.convert(imageView.frame, to: nil)
+        
+        let zoomingImageView = UIImageView(frame: startingFrame!)
+        zoomingImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleZoomOut)))
+        zoomingImageView.backgroundColor = UIColor.red
+        zoomingImageView.image = imageView.image
+        zoomingImageView.isUserInteractionEnabled = true
+        
+        if let keyWindow = UIApplication.shared.keyWindow {
+            blackBackgroundView = UIView(frame: keyWindow.frame)
+            blackBackgroundView?.backgroundColor = UIColor.black
+            blackBackgroundView?.alpha = 0
+            keyWindow.addSubview(blackBackgroundView!)
+            
+            keyWindow.addSubview(zoomingImageView)
+            
+            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+                
+                self.blackBackgroundView?.alpha = 1
+                self.containerView.alpha = 0
+                
+                let height = self.startingFrame!.height / self.startingFrame!.width * keyWindow.frame.width
+                
+                zoomingImageView.frame = CGRect(x: 0, y: 0, width: keyWindow.frame.width, height: height)
+                
+                zoomingImageView.center = keyWindow.center
+                
+                }, completion: { (completed) in
+//                    do nothing
+            })
+        }
+    }
+    
 // MARK: ~ ACTIONS
     @objc func sendButtonTapped() {
         let properties = ["text": inputTextField.text!]
@@ -227,6 +268,24 @@ class ChatCollectionViewController: UICollectionViewController {
         imagePickerController.allowsEditing = true
         imagePickerController.delegate = self
         present(imagePickerController, animated: true, completion: nil)
+    }
+    
+    @objc func handleZoomOut(_ tapGesture: UITapGestureRecognizer) {
+        if let zoomOutImageView = tapGesture.view {
+            zoomOutImageView.layer.cornerRadius = 16
+            zoomOutImageView.clipsToBounds = true
+            
+            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {                
+                zoomOutImageView.frame = self.startingFrame!
+                self.blackBackgroundView?.alpha = 0
+                self.containerView.alpha = 1
+                
+                }, completion: { (completed) in
+                    zoomOutImageView.removeFromSuperview()
+                    self.startingImageView?.isHidden = false
+            })
+            
+        }
     }
     
 // MARK: ~ NOTIFS - keyboard
@@ -271,6 +330,7 @@ extension ChatCollectionViewController {
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! ChatCollectionViewCell
+        cell.delegate = self
         let message = messages[indexPath.item]
         cell.textView.text = message.text
         if let profileImageUrl = user?.profileImageUrl {
@@ -285,8 +345,10 @@ extension ChatCollectionViewController {
         message.fromId == Auth.auth().currentUser?.uid ? cell.setUI(messageType: .outgoing) : cell.setUI(messageType: .incoming)
         if let text = message.text {
             cell.bubbleWidthAnchor?.constant = estimateFrameForText(text).width + 32
+            cell.textView.isHidden = false
         } else if message.imageUrl != nil {
             cell.bubbleWidthAnchor?.constant = 200
+            cell.textView.isHidden = true
         }
         return cell
     }
@@ -331,5 +393,11 @@ extension ChatCollectionViewController: UIImagePickerControllerDelegate, UINavig
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         dismiss(animated: true, completion: nil)
+    }
+}
+
+extension ChatCollectionViewController: ChatCollectionViewCellDelegate {
+    func imageTapped(cell: ChatCollectionViewCell, imageView: UIImageView) {
+        performZoomIn(imageView: imageView)
     }
 }
