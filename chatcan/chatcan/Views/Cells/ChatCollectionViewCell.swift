@@ -16,11 +16,11 @@ class ChatCollectionViewCell: UICollectionViewCell {
     
     public lazy var textView: UITextView = {
         let textview = UITextView()
-        textview.text = "SAMPLE TEXT FOR NOW"
         textview.font = UIFont.systemFont(ofSize: 16)
         textview.translatesAutoresizingMaskIntoConstraints = false
         textview.backgroundColor = UIColor.clear
         textview.textColor = UIColor.Custom.textDarkBlue
+        textview.isEditable = false
         return textview
     }()
     

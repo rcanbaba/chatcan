@@ -50,6 +50,7 @@ class ChatCollectionViewController: UICollectionViewController {
         textField.backgroundColor = UIColor.Custom.ligthBlue
         textField.layer.cornerRadius = 12.0
         textField.delegate = self
+        textField.setPadding(left: 6, right: 4)
         return textField
     }()
     
