@@ -134,13 +134,7 @@ class ChatCollectionViewController: UICollectionViewController {
             let messageRef = Database.database().reference().child("messages").child(messageId)
             messageRef.observeSingleEvent(of: .value) { snapshot in
                 guard let dictionary = snapshot.value as? [String: AnyObject] else { return }
-                let message = Message()
-                message.fromId = dictionary["fromId"] as? String ?? ""
-                message.toId = dictionary["toId"] as? String ?? ""
-                message.text = dictionary["text"] as? String ?? ""
-                message.timestamp = dictionary["timestamp"] as? NSNumber ?? 0
-                message.imageUrl = dictionary["imageUrl"] as? String ?? ""
-                self.messages.append(message)
+                self.messages.append(Message(dictionary: dictionary))
                 DispatchQueue.main.async {
                     self.collectionView.reloadData()
                 }
@@ -173,7 +167,7 @@ class ChatCollectionViewController: UICollectionViewController {
                             return
                         } else {
                             if let url = url?.absoluteString {
-                                self.sendImageMessage(imageUrl: url)
+                                self.sendImageMessage(imageUrl: url, image: image)
                             }
                         }
                     }
@@ -182,14 +176,14 @@ class ChatCollectionViewController: UICollectionViewController {
         }
     }
     
-    private func sendImageMessage(imageUrl: String) {
+    private func sendImageMessage(imageUrl: String, image: UIImage) {
         let ref = Database.database().reference().child("messages")
         let childRef = ref.childByAutoId()
         let toId = user!.id!
         let fromId = Auth.auth().currentUser!.uid
         let timestamp: NSNumber = NSNumber(value: Int(NSDate().timeIntervalSince1970))
         
-        let values = ["imageUrl": imageUrl, "toId": toId, "fromId": fromId, "timestamp": timestamp ] as [String : Any]
+        let values = ["toId": toId, "fromId": fromId, "timestamp": timestamp, "imageUrl": imageUrl, "imageWidth": image.size.width, "imageHeight": image.size.height] as [String : Any]
         
         childRef.updateChildValues(values) { error, reference in
             if let error = error {
@@ -290,6 +284,8 @@ extension ChatCollectionViewController {
         message.fromId == Auth.auth().currentUser?.uid ? cell.setUI(messageType: .outgoing) : cell.setUI(messageType: .incoming)
         if let text = message.text {
             cell.bubbleWidthAnchor?.constant = estimateFrameForText(text).width + 32
+        } else if message.imageUrl != nil {
+            cell.bubbleWidthAnchor?.constant = 200
         }
         return cell
     }
@@ -298,8 +294,11 @@ extension ChatCollectionViewController {
 extension ChatCollectionViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         var height: CGFloat = 80
-        if let text = messages[indexPath.item].text {
+        let message = messages[indexPath.item]
+        if let text = message.text {
             height = estimateFrameForText(text).height + 20
+        } else if let imageWidth = message.imageWidth?.floatValue, let imageHeight = message.imageHeight?.floatValue {
+            height = CGFloat(imageHeight / imageWidth * 200)
         }
         let width = UIScreen.main.bounds.width
         return CGSize(width: width, height: height)

@@ -130,13 +130,12 @@ class InboxViewController: UITableViewController {
     private func fetchMessageAndReloadTable(messageId: String) {
         let messagesReference = Database.database().reference().child("messages").child(messageId)
         messagesReference.observeSingleEvent(of: .value) { snapshot in
-            if let value = snapshot.value as? NSDictionary {
-                let message = Message()
-                message.fromId = value["fromId"] as? String ?? ""
-                message.toId = value["toId"] as? String ?? ""
-                message.text = value["text"] as? String ?? ""
-                message.timestamp = value["timestamp"] as? NSNumber ?? 0
-                if let chatPartnerId = message.chatPartnerId() {
+            
+            if let dictionary = snapshot.value as? [String: AnyObject] {
+                let message = Message(dictionary: dictionary)
+                
+                let chatPartnerId = message.chatPartnerId()
+                if let chatPartnerId = chatPartnerId {
                     self.messagesDictionary[chatPartnerId] = message
                     self.messages = Array(self.messagesDictionary.values)
                     self.messages.sort(by: { (message1, message2) -> Bool in
