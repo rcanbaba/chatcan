@@ -230,14 +230,21 @@ class ChatCollectionViewController: UICollectionViewController {
     }
     
 // MARK: ~ NOTIFS - keyboard
+    
     @objc func handleKeyboardWillShow(_ notification: Notification) {
         let keyboardFrame = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as AnyObject).cgRectValue
         let keyboardDuration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as AnyObject).doubleValue
         
         containerViewBottomAnchor?.constant = -keyboardFrame!.height + 32
-        UIView.animate(withDuration: keyboardDuration!, animations: {
-            self.view.layoutIfNeeded()
-        })
+        
+        UIView.animate(withDuration: keyboardDuration!) { [weak self] in
+            self?.view.layoutIfNeeded()
+        } completion: { (_) in
+            if self.messages.count > 0 {
+                let indexPath = IndexPath(item: self.messages.count - 1, section: 0)
+                self.collectionView?.scrollToItem(at: indexPath, at: .top, animated: true)
+            }
+        }
     }
     
     @objc func handleKeyboardWillHide(_ notification: Notification) {
