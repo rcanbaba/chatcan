@@ -132,11 +132,16 @@ class ChatCollectionViewController: UICollectionViewController {
         userMessageRef.observe(.childAdded) { snapshot in
             let messageId = snapshot.key
             let messageRef = Database.database().reference().child("messages").child(messageId)
-            messageRef.observeSingleEvent(of: .value) { snapshot in
+            messageRef.observeSingleEvent(of: .value) { [weak self] snapshot in
+                guard let self = self else {
+                    return
+                }
                 guard let dictionary = snapshot.value as? [String: AnyObject] else { return }
                 self.messages.append(Message(dictionary: dictionary))
                 DispatchQueue.main.async {
                     self.collectionView.reloadData()
+                    let indexPath = IndexPath(item: self.messages.count - 1, section: 0)
+                    self.collectionView.scrollToItem(at: indexPath, at: .bottom, animated: true)
                 }
             } withCancel: { error in
                 print(error.localizedDescription)
