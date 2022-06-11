@@ -176,14 +176,16 @@ class ChatCollectionViewController: UICollectionViewController {
         }
     }
     
-    private func sendImageMessage(imageUrl: String, image: UIImage) {
+    private func sendMessage(properties: [String: AnyObject]) {
         let ref = Database.database().reference().child("messages")
         let childRef = ref.childByAutoId()
         let toId = user!.id!
         let fromId = Auth.auth().currentUser!.uid
         let timestamp: NSNumber = NSNumber(value: Int(NSDate().timeIntervalSince1970))
         
-        let values = ["toId": toId, "fromId": fromId, "timestamp": timestamp, "imageUrl": imageUrl, "imageWidth": image.size.width, "imageHeight": image.size.height] as [String : Any]
+        var values: [String: AnyObject] = ["toId": toId as AnyObject, "fromId": fromId as AnyObject, "timestamp": timestamp as AnyObject]
+        
+        properties.forEach({values[$0] = $1})
         
         childRef.updateChildValues(values) { error, reference in
             if let error = error {
@@ -201,31 +203,17 @@ class ChatCollectionViewController: UICollectionViewController {
         }
     }
     
+    private func sendImageMessage(imageUrl: String, image: UIImage) {
+        let properties: [String: AnyObject] = ["imageUrl": imageUrl as AnyObject,
+                                               "imageWidth": image.size.width as AnyObject,
+                                               "imageHeight": image.size.height as AnyObject]
+        sendMessage(properties: properties)
+    }
+    
 // MARK: ~ ACTIONS
     @objc func sendButtonTapped() {
-        let ref = Database.database().reference().child("messages")
-        let childRef = ref.childByAutoId()
-        let toId = user!.id!
-        let fromId = Auth.auth().currentUser!.uid
-        let timestamp: NSNumber = NSNumber(value: Int(NSDate().timeIntervalSince1970))
-        let text = inputTextField.text ?? "" as Any
-        
-        let values = ["text": text, "toId": toId, "fromId": fromId, "timestamp": timestamp ] as [String : Any]
-        
-        childRef.updateChildValues(values) { error, reference in
-            if let error = error {
-                self.present(LoginViewController.getAlert(title: "Reference Error", message: error.localizedDescription), animated: true)
-                return
-            } else {
-                self.inputTextField.text = nil
-                let userMessagesRef = Database.database().reference().child("user-messages").child(fromId).child(toId)
-                let recipientUserMessagesRef = Database.database().reference().child("user-messages").child(toId).child(fromId)
-                if let messageId = childRef.key {
-                    userMessagesRef.updateChildValues([messageId : 1])
-                    recipientUserMessagesRef.updateChildValues([messageId : 1])
-                }
-            }
-        }
+        let properties = ["text": inputTextField.text!]
+        sendMessage(properties: properties as [String : AnyObject])
     }
     
     @objc func uploadImageTaped() {
