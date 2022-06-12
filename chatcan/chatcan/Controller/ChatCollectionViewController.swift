@@ -21,6 +21,9 @@ class ChatCollectionViewController: UICollectionViewController {
     
     let cellIdentifier = "cellIdentifier"
     
+    private var playerLayer: AVPlayerLayer?
+    private var player: AVPlayer?
+    
     private var messages = [Message]()
     private var containerViewBottomAnchor: NSLayoutConstraint?
     
@@ -395,6 +398,7 @@ extension ChatCollectionViewController {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! ChatCollectionViewCell
         cell.delegate = self
         let message = messages[indexPath.item]
+        cell.message = message
         cell.textView.text = message.text
         if let profileImageUrl = user?.profileImageUrl {
             cell.profileImageView.loadImageUsingCacheWithUrlString(urlString: profileImageUrl)
@@ -413,6 +417,8 @@ extension ChatCollectionViewController {
             cell.bubbleWidthAnchor?.constant = 200
             cell.textView.isHidden = true
         }
+        cell.playButton.isHidden = message.videoUrl == nil
+        
         return cell
     }
 }

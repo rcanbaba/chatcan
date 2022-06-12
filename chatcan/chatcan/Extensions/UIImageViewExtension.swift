@@ -38,5 +38,17 @@ extension UIImageView {
             }
         }.resume()
     }
-    
+}
+
+extension UIImage {
+    func resized(newSize: CGSize) -> UIImage {
+        let scale = newSize.height / self.size.height
+        let newWidth = self.size.width * scale
+        let newSize = CGSize(width: newWidth, height: newSize.height)
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+        
+        return renderer.image { _ in
+            self.draw(in: CGRect(origin: .zero, size: newSize))
+        }
+    }
 }
