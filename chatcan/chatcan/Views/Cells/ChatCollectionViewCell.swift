@@ -146,6 +146,9 @@ class ChatCollectionViewCell: UICollectionViewCell {
     
 // MARK: ACTIONS
     @objc func imageTapped(_ tapGesture: UITapGestureRecognizer) {
+        if message?.videoUrl != nil {
+            return
+        }
         if let imageView = tapGesture.view as? UIImageView {
             delegate?.imageTapped(cell: self, imageView: imageView)
         }
