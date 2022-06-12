@@ -7,6 +7,8 @@
 
 import UIKit
 import Firebase
+import CoreMedia
+import AVFoundation
 
 class ChatCollectionViewController: UICollectionViewController {
     
@@ -18,6 +20,9 @@ class ChatCollectionViewController: UICollectionViewController {
     }
     
     let cellIdentifier = "cellIdentifier"
+    
+    private var playerLayer: AVPlayerLayer?
+    private var player: AVPlayer?
     
     private var messages = [Message]()
     private var containerViewBottomAnchor: NSLayoutConstraint?
@@ -157,7 +162,7 @@ class ChatCollectionViewController: UICollectionViewController {
         return NSString(string: text).boundingRect(with: size, options: options, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16)], context: nil)
     }
     
-    private func uploadImageToFirebaseStorage(image: UIImage) {
+    private func uploadImageToFirebaseStorage(image: UIImage, completionHandler: @escaping (_ imageUrl: String) -> ()) {
         let imageName = NSUUID().uuidString
         let storageRef = Storage.storage().reference().child("messsage_images").child("\(imageName).jpg")
         
@@ -173,11 +178,50 @@ class ChatCollectionViewController: UICollectionViewController {
                             return
                         } else {
                             if let url = url?.absoluteString {
-                                self.sendImageMessage(imageUrl: url, image: image)
+                                completionHandler(url)
                             }
                         }
                     }
                 }
+            }
+        }
+    }
+    
+    private func uploadVideoToFirebaseStorage(videoUrl: URL) {
+        let filename = UUID().uuidString + ".mov"
+        let storageRef = Storage.storage().reference().child("message_movies").child(filename)
+        let metadata = StorageMetadata()
+        metadata.contentType = "video/quicktime"
+        
+        if let videoData = NSData(contentsOf: videoUrl) as Data? {
+            let uploadTask = storageRef.putData(videoData, metadata: metadata) { metadata, error in
+                if let error = error {
+                    self.present(ChatCollectionViewController.getAlert(title: "Upload Error", message: error.localizedDescription), animated: true)
+                    return
+                } else {
+                    storageRef.downloadURL { downloadUrl, error in
+                        if let error = error {
+                            self.present(ChatCollectionViewController.getAlert(title: "Download Url Error", message: error.localizedDescription), animated: true)
+                            return
+                        } else {
+                            if let downloadUrl = downloadUrl?.absoluteString {
+                                if let thumbnailImage = self.thumbnailImageForVideo(videoUrl: videoUrl) {
+                                    self.uploadImageToFirebaseStorage(image: thumbnailImage) { imageUrl in
+                                        self.sendVideoMessage(videoUrl: downloadUrl, thumbnailImageUrl: imageUrl, thumbnailImage: thumbnailImage)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            uploadTask.observe(.progress) { (snapshot) in
+                if let completiontCount = snapshot.progress?.completedUnitCount {
+                    self.navigationItem.title = String(completiontCount)
+                }
+            }
+            uploadTask.observe(.success) { (snapshot) in
+                self.navigationItem.title = self.user?.name
             }
         }
     }
@@ -190,7 +234,6 @@ class ChatCollectionViewController: UICollectionViewController {
         let timestamp: NSNumber = NSNumber(value: Int(NSDate().timeIntervalSince1970))
         
         var values: [String: AnyObject] = ["toId": toId as AnyObject, "fromId": fromId as AnyObject, "timestamp": timestamp as AnyObject]
-        
         properties.forEach({values[$0] = $1})
         
         childRef.updateChildValues(values) { error, reference in
@@ -214,6 +257,28 @@ class ChatCollectionViewController: UICollectionViewController {
                                                "imageWidth": image.size.width as AnyObject,
                                                "imageHeight": image.size.height as AnyObject]
         sendMessage(properties: properties)
+    }
+    
+    private func sendVideoMessage(videoUrl: String, thumbnailImageUrl: String, thumbnailImage: UIImage) {
+        let properties: [String: AnyObject] = ["imageUrl": thumbnailImageUrl as AnyObject,
+                                               "imageWidth": thumbnailImage.size.width as AnyObject,
+                                               "imageHeight": thumbnailImage.size.height as AnyObject,
+                                               "videoUrl": videoUrl as AnyObject]
+        self.sendMessage(properties: properties)
+        
+    }
+    
+    private func thumbnailImageForVideo(videoUrl: URL) -> UIImage? {
+        let asset = AVAsset(url: videoUrl)
+        let imageGenerator = AVAssetImageGenerator(asset: asset)
+        
+        do {
+            let thumbnailCGImage = try imageGenerator.copyCGImage(at: CMTimeMake(value: 1, timescale: 60), actualTime: nil)
+            return UIImage(cgImage: thumbnailCGImage)
+        } catch let err {
+            print(err)
+        }
+        return nil
     }
     
     private var blackBackgroundView: UIView?
@@ -267,6 +332,7 @@ class ChatCollectionViewController: UICollectionViewController {
         let imagePickerController = UIImagePickerController()
         imagePickerController.allowsEditing = true
         imagePickerController.delegate = self
+        imagePickerController.mediaTypes = [MediaType.photo.rawValue, MediaType.video.rawValue]
         present(imagePickerController, animated: true, completion: nil)
     }
     
@@ -332,6 +398,7 @@ extension ChatCollectionViewController {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! ChatCollectionViewCell
         cell.delegate = self
         let message = messages[indexPath.item]
+        cell.message = message
         cell.textView.text = message.text
         if let profileImageUrl = user?.profileImageUrl {
             cell.profileImageView.loadImageUsingCacheWithUrlString(urlString: profileImageUrl)
@@ -350,6 +417,8 @@ extension ChatCollectionViewController {
             cell.bubbleWidthAnchor?.constant = 200
             cell.textView.isHidden = true
         }
+        cell.playButton.isHidden = message.videoUrl == nil
+        
         return cell
     }
 }
@@ -386,7 +455,14 @@ extension ChatCollectionViewController: UIImagePickerControllerDelegate, UINavig
             guard let image = info[.editedImage] as? UIImage else {
                 return
             }
-            uploadImageToFirebaseStorage(image: image)
+            uploadImageToFirebaseStorage(image: image) { imageUrl in
+                self.sendImageMessage(imageUrl: imageUrl, image: image)
+            }
+        } else {
+            guard let videoUrl = info[.mediaURL] as? URL else {
+                return
+            }
+            uploadVideoToFirebaseStorage(videoUrl: videoUrl)
         }
         dismiss(animated: true, completion: nil)
     }

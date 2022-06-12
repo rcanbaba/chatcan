@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import AVFoundation
 
 enum MessageType: Int {
     case incoming = 0
@@ -19,6 +20,27 @@ protocol ChatCollectionViewCellDelegate: AnyObject {
 class ChatCollectionViewCell: UICollectionViewCell {
     
     public weak var delegate: ChatCollectionViewCellDelegate?
+    
+    public var message: Message?
+    
+    private lazy var activityIndicatorView: UIActivityIndicatorView = {
+        let aiv = UIActivityIndicatorView(style: .medium)
+        aiv.color = UIColor.white
+        aiv.translatesAutoresizingMaskIntoConstraints = false
+        aiv.hidesWhenStopped = true
+        return aiv
+    }()
+    
+    public lazy var playButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        let image = UIImage(named: "play-tri-button-icon")?.resized(newSize: CGSize(width: 60, height: 60))
+        button.tintColor = UIColor.white
+        button.setImage(image, for: .normal)
+        button.addTarget(self, action: #selector(playButtonTapped), for: .touchUpInside)
+        
+        return button
+    }()
     
     public lazy var textView: UITextView = {
         let textview = UITextView()
@@ -64,6 +86,9 @@ class ChatCollectionViewCell: UICollectionViewCell {
     private var bubbleViewRightAnchor: NSLayoutConstraint?
     private var bubbleViewLeftAnchor: NSLayoutConstraint?
     
+    private var playerLayer: AVPlayerLayer?
+    private var player: AVPlayer?
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
@@ -93,17 +118,57 @@ class ChatCollectionViewCell: UICollectionViewCell {
         messageImageView.topAnchor.constraint(equalTo: bubbleView.topAnchor).isActive = true
         messageImageView.widthAnchor.constraint(equalTo: bubbleView.widthAnchor).isActive = true
         messageImageView.heightAnchor.constraint(equalTo: bubbleView.heightAnchor).isActive = true
+        
+        bubbleView.addSubview(activityIndicatorView)
+        activityIndicatorView.centerXAnchor.constraint(equalTo: bubbleView.centerXAnchor).isActive = true
+        activityIndicatorView.centerYAnchor.constraint(equalTo: bubbleView.centerYAnchor).isActive = true
+        activityIndicatorView.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        activityIndicatorView.heightAnchor.constraint(equalToConstant: 100).isActive = true
+        
+        bubbleView.addSubview(playButton)
+        playButton.centerXAnchor.constraint(equalTo: bubbleView.centerXAnchor).isActive = true
+        playButton.centerYAnchor.constraint(equalTo: bubbleView.centerYAnchor).isActive = true
+        playButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        playButton.heightAnchor.constraint(equalToConstant: 100).isActive = true
+        bringSubviewToFront(playButton)
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        playerLayer?.removeFromSuperlayer()
+        player?.pause()
+        activityIndicatorView.stopAnimating()
+    }
+    
 // MARK: ACTIONS
     @objc func imageTapped(_ tapGesture: UITapGestureRecognizer) {
+        if message?.videoUrl != nil {
+            return
+        }
         if let imageView = tapGesture.view as? UIImageView {
             delegate?.imageTapped(cell: self, imageView: imageView)
         }
+    }
+    
+    @objc func playButtonTapped() {
+        if let videoUrlString = message?.videoUrl, let url = URL(string: videoUrlString) {
+            player = AVPlayer(url: url)
+            
+            playerLayer = AVPlayerLayer(player: player)
+            playerLayer?.frame = bubbleView.bounds
+            bubbleView.layer.addSublayer(playerLayer!)
+            
+            player?.play()
+            activityIndicatorView.startAnimating()
+            playButton.isHidden = true
+            
+            print("Attempting to play video......???")
+        }
+        
     }
 }
 
