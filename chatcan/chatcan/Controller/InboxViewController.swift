@@ -111,9 +111,6 @@ class InboxViewController: UITableViewController {
         messages.removeAll()
         messagesDictionary.removeAll()
         tableView.reloadData()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-            self?.tableView.reloadData()
-        }
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let ref = Database.database().reference().child("user-messages").child(uid)
         ref.observe(.childAdded) { snapshot in
@@ -124,6 +121,18 @@ class InboxViewController: UITableViewController {
             } withCancel: { error in
                 print(error.localizedDescription)
             }
+        }
+        
+        ref.observe(.childRemoved) { snapshot in
+            self.messagesDictionary.removeValue(forKey: snapshot.key)
+            self.reloadTableViewWithDelay()
+        }
+    }
+    
+    private func reloadTableViewWithDelay() {
+        self.messages = Array(self.messagesDictionary.values)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.tableView.reloadData()
         }
     }
     
@@ -137,13 +146,10 @@ class InboxViewController: UITableViewController {
                 let chatPartnerId = message.chatPartnerId()
                 if let chatPartnerId = chatPartnerId {
                     self.messagesDictionary[chatPartnerId] = message
-                    self.messages = Array(self.messagesDictionary.values)
                     self.messages.sort(by: { (message1, message2) -> Bool in
                         return Int(truncating: message1.timestamp ?? 0) > Int(truncating: message2.timestamp ?? 0)
                     })
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-                        self?.tableView.reloadData()
-                    }
+                    self.reloadTableViewWithDelay()
                 }
             }
         } withCancel: { error in
@@ -210,6 +216,30 @@ extension InboxViewController {
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 74
+    }
+    
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let message = self.messages[indexPath.row]
+        
+        if let chatPartnerId = message.chatPartnerId() {
+            let reference = Database.database().reference().child("user-messages").child(uid).child(chatPartnerId)
+            reference.removeValue { error, ref in
+                if error != nil {
+                    print("Failed to delete message:", error?.localizedDescription)
+                    return
+                }
+                self.messagesDictionary.removeValue(forKey: chatPartnerId)
+                self.reloadTableViewWithDelay()
+            }
+        }
+        
     }
     
 }
