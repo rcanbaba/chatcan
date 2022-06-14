@@ -32,6 +32,7 @@
 		B4D308832843B18A001C88AF /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D308822843B18A001C88AF /* User.swift */; };
 		B4D308862843B45B001C88AF /* UserTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D308852843B45B001C88AF /* UserTableViewCell.swift */; };
 		B4D3088828441344001C88AF /* UIImageViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D3088728441344001C88AF /* UIImageViewExtension.swift */; };
+		B4E417A52858EB97006137C6 /* ChatInputContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4E417A42858EB97006137C6 /* ChatInputContainerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,6 +60,7 @@
 		B4D308822843B18A001C88AF /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		B4D308852843B45B001C88AF /* UserTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserTableViewCell.swift; sourceTree = "<group>"; };
 		B4D3088728441344001C88AF /* UIImageViewExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageViewExtension.swift; sourceTree = "<group>"; };
+		B4E417A42858EB97006137C6 /* ChatInputContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatInputContainerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -146,6 +148,7 @@
 				B4601454284FCCF900821EAF /* Components */,
 				B4D308842843B43E001C88AF /* Cells */,
 				B488D9CA284278F200BCA876 /* LoginView.swift */,
+				B4E417A42858EB97006137C6 /* ChatInputContainerView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -261,6 +264,7 @@
 				B4D3088828441344001C88AF /* UIImageViewExtension.swift in Sources */,
 				B488D9AE28422E8700BCA876 /* AppDelegate.swift in Sources */,
 				B4D308832843B18A001C88AF /* User.swift in Sources */,
+				B4E417A52858EB97006137C6 /* ChatInputContainerView.swift in Sources */,
 				B488D9CD284282F600BCA876 /* UIViewExtension.swift in Sources */,
 				B4D3087E2842C618001C88AF /* SegmentedControlView.swift in Sources */,
 				B4B1383E28466F4B00847331 /* Message.swift in Sources */,

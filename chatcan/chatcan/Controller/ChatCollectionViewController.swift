@@ -25,48 +25,16 @@ class ChatCollectionViewController: UICollectionViewController {
     private var player: AVPlayer?
     
     private var messages = [Message]()
-    private var containerViewBottomAnchor: NSLayoutConstraint?
     
-    private lazy var containerView: UIView = {
-        let view = UIView()
-        view.backgroundColor = UIColor.lightGray
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
+    private lazy var inputContainerView: ChatInputContainerView = {
+        let inputContainerView = ChatInputContainerView()
+        inputContainerView.backgroundColor = UIColor.lightGray
+        inputContainerView.translatesAutoresizingMaskIntoConstraints = false
+        inputContainerView.delegate = self
+        return inputContainerView
     }()
     
-    private lazy var sendButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.backgroundColor = UIColor.Custom.textDarkBlue
-        button.setTitle("Send", for: .normal)
-        button.layer.cornerRadius = 10.0
-        button.setTitleColor(UIColor.Custom.appWhite, for: .normal)
-        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
-        button.addTarget(self, action: #selector(sendButtonTapped), for: .touchUpInside)
-        return button
-    }()
-    
-    private lazy var inputTextField: UITextField = {
-        let textField = UITextField()
-        textField.placeholder = " Enter message..."
-        textField.setPlaceHolderColor(UIColor.Login.background)
-        textField.textColor = UIColor.Custom.textDarkBlue
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.backgroundColor = UIColor.Custom.ligthBlue
-        textField.layer.cornerRadius = 12.0
-        textField.delegate = self
-        textField.setPadding(left: 6, right: 4)
-        return textField
-    }()
-    
-    private lazy var uploadImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.isUserInteractionEnabled = true
-        imageView.image = UIImage(named: "upload-image-msg-icon")
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(uploadImageTaped)))
-        return imageView
-    }()
+    private var inputContainerViewBottomAnchor: NSLayoutConstraint?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -92,39 +60,12 @@ class ChatCollectionViewController: UICollectionViewController {
     }
     
     private func configureInputComponents() {
-        view.addSubview(containerView)
-        containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-        containerViewBottomAnchor = containerView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        containerViewBottomAnchor?.isActive = true
-        containerView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        containerView.heightAnchor.constraint(equalToConstant: 100).isActive = true
-        
-        containerView.addSubview(uploadImageView)
-        uploadImageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 8).isActive = true
-        uploadImageView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 12).isActive = true
-        uploadImageView.widthAnchor.constraint(equalToConstant: 40).isActive = true
-        uploadImageView.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        
-        containerView.addSubview(sendButton)
-        sendButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -12).isActive = true
-        sendButton.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 8).isActive = true
-        sendButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
-        sendButton.heightAnchor.constraint(equalTo: containerView.heightAnchor, constant: -48).isActive = true
-        
-        containerView.addSubview(inputTextField)
-        inputTextField.leadingAnchor.constraint(equalTo: uploadImageView.trailingAnchor, constant: 8).isActive = true
-        inputTextField.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 14).isActive = true
-        inputTextField.trailingAnchor.constraint(equalTo: sendButton.leadingAnchor, constant: -8).isActive = true
-        inputTextField.heightAnchor.constraint(equalTo: containerView.heightAnchor, constant: -60).isActive = true
-        
-        let separatorLineView = UIView()
-        separatorLineView.backgroundColor = UIColor.Custom.textDarkBlue
-        separatorLineView.translatesAutoresizingMaskIntoConstraints = false
-        containerView.addSubview(separatorLineView)
-        separatorLineView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor).isActive = true
-        separatorLineView.widthAnchor.constraint(equalTo: containerView.widthAnchor).isActive = true
-        separatorLineView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: -2).isActive = true
-        separatorLineView.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        view.addSubview(inputContainerView)
+        inputContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        inputContainerViewBottomAnchor = inputContainerView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        inputContainerViewBottomAnchor?.isActive = true
+        inputContainerView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        inputContainerView.heightAnchor.constraint(equalToConstant: 100).isActive = true
     }
     
     private func setupKeyboardObservers() {
@@ -241,7 +182,7 @@ class ChatCollectionViewController: UICollectionViewController {
                 self.present(LoginViewController.getAlert(title: "Reference Error", message: error.localizedDescription), animated: true)
                 return
             } else {
-                self.inputTextField.text = nil
+                self.inputContainerView.inputTextField.text = nil
                 let userMessagesRef = Database.database().reference().child("user-messages").child(fromId).child(toId)
                 let recipientUserMessagesRef = Database.database().reference().child("user-messages").child(toId).child(fromId)
                 if let messageId = childRef.key {
@@ -308,7 +249,7 @@ class ChatCollectionViewController: UICollectionViewController {
             UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
                 
                 self.blackBackgroundView?.alpha = 1
-                self.containerView.alpha = 0
+                self.inputContainerView.alpha = 0
                 
                 let height = self.startingFrame!.height / self.startingFrame!.width * keyWindow.frame.width
                 
@@ -323,12 +264,12 @@ class ChatCollectionViewController: UICollectionViewController {
     }
     
 // MARK: ~ ACTIONS
-    @objc func sendButtonTapped() {
-        let properties = ["text": inputTextField.text!]
+    private func sendButtonTapped() {
+        let properties = ["text": self.inputContainerView.inputTextField.text!]
         sendMessage(properties: properties as [String : AnyObject])
     }
     
-    @objc func uploadImageTaped() {
+    private func uploadImageTaped() {
         let imagePickerController = UIImagePickerController()
         imagePickerController.allowsEditing = true
         imagePickerController.delegate = self
@@ -344,7 +285,7 @@ class ChatCollectionViewController: UICollectionViewController {
             UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {                
                 zoomOutImageView.frame = self.startingFrame!
                 self.blackBackgroundView?.alpha = 0
-                self.containerView.alpha = 1
+                self.inputContainerView.alpha = 1
                 
                 }, completion: { (completed) in
                     zoomOutImageView.removeFromSuperview()
@@ -360,7 +301,7 @@ class ChatCollectionViewController: UICollectionViewController {
         let keyboardFrame = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as AnyObject).cgRectValue
         let keyboardDuration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as AnyObject).doubleValue
         
-        containerViewBottomAnchor?.constant = -keyboardFrame!.height + 32
+        inputContainerViewBottomAnchor?.constant = -keyboardFrame!.height + 32
         
         UIView.animate(withDuration: keyboardDuration!) { [weak self] in
             self?.view.layoutIfNeeded()
@@ -375,7 +316,7 @@ class ChatCollectionViewController: UICollectionViewController {
     @objc func handleKeyboardWillHide(_ notification: Notification) {
         let keyboardDuration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as AnyObject).doubleValue
         
-        containerViewBottomAnchor?.constant = 0
+        inputContainerViewBottomAnchor?.constant = 0
         UIView.animate(withDuration: keyboardDuration!, animations: {
             self.view.layoutIfNeeded()
         })
@@ -423,6 +364,7 @@ extension ChatCollectionViewController {
     }
 }
 
+// MARK: UIImagePickerControllerDelegate, UICollectionViewDelegateFlowLayout
 extension ChatCollectionViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         var height: CGFloat = 80
@@ -437,15 +379,7 @@ extension ChatCollectionViewController: UICollectionViewDelegateFlowLayout {
     }
 }
 
-extension ChatCollectionViewController: UITextFieldDelegate {
-    // to send message by tapping enter
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        sendButtonTapped()
-        return true
-    }
-    
-}
-
+// MARK: UIImagePickerControllerDelegate, UINavigationControllerDelegate
 extension ChatCollectionViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate  {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         guard let mediaType = info[UIImagePickerController.InfoKey.mediaType] as? String else {
@@ -472,8 +406,19 @@ extension ChatCollectionViewController: UIImagePickerControllerDelegate, UINavig
     }
 }
 
+// MARK: ChatCollectionViewCellDelegate
 extension ChatCollectionViewController: ChatCollectionViewCellDelegate {
     func imageTapped(cell: ChatCollectionViewCell, imageView: UIImageView) {
         performZoomIn(imageView: imageView)
+    }
+}
+
+// MARK: ChatInputContainerViewDelegate
+extension ChatCollectionViewController: ChatInputContainerViewDelegate {
+    func sendButtonTapped(view: ChatInputContainerView) {
+        sendButtonTapped()
+    }
+    func uploadMediaButtonTapped(view: ChatInputContainerView) {
+        uploadImageTaped()
     }
 }
