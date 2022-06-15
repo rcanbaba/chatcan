@@ -172,7 +172,7 @@ class ChatCollectionViewController: UICollectionViewController {
         let childRef = ref.childByAutoId()
         let toId = user!.id!
         let fromId = Auth.auth().currentUser!.uid
-        let timestamp: NSNumber = NSNumber(value: Int(NSDate().timeIntervalSince1970))
+        let timestamp = NSNumber(value: Int(NSDate().timeIntervalSince1970))
         
         var values: [String: AnyObject] = ["toId": toId as AnyObject, "fromId": fromId as AnyObject, "timestamp": timestamp as AnyObject]
         properties.forEach({values[$0] = $1})
